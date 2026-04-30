@@ -26,79 +26,8 @@
     <section class="section" id="upcoming">
       <div class="container">
         <h2 class="section-title"><span class="icon">📅</span> משחקים קרובים</h2>
-
-        <!-- NEXT GAME - FEATURED -->
-        <div class="game-card game-card-featured">
-          <div class="featured-label">⚡ המשחק הבא</div>
-          <div class="featured-body">
-            <div class="featured-date">יום ב׳ · 5 במאי 2026 · 20:00</div>
-            <div class="game-teams featured-teams">
-              <div class="team home">
-                <div class="team-badge yellow-badge featured-badge">מכב"א</div>
-                <span>מכבי תל אביב</span>
-              </div>
-              <div class="vs featured-vs">VS</div>
-              <div class="team away">
-                <div class="team-badge red-badge featured-badge">הפ"ב</div>
-                <span>הפועל באר שבע</span>
-              </div>
-            </div>
-            <div class="game-info featured-info">🏟️ אצטדיון בלומפילד</div>
-          </div>
-        </div>
-
-        <!-- REMAINING GAMES -->
-        <div class="games-grid">
-
-          <div class="game-card upcoming-card">
-            <div class="game-date">יום ב׳ · 12 במאי 2026</div>
-            <div class="game-teams">
-              <div class="team home">
-                <div class="team-badge green-badge">מכח"</div>
-                <span>מכבי חיפה</span>
-              </div>
-              <div class="vs">VS</div>
-              <div class="team away">
-                <div class="team-badge yellow-badge">מכב"א</div>
-                <span>מכבי תל אביב</span>
-              </div>
-            </div>
-            <div class="game-info">🏟️ סמי עופר · 19:00</div>
-          </div>
-
-          <div class="game-card upcoming-card">
-            <div class="game-date">שבת · 17 במאי 2026</div>
-            <div class="game-teams">
-              <div class="team home">
-                <div class="team-badge yellow-badge">מכב"א</div>
-                <span>מכבי תל אביב</span>
-              </div>
-              <div class="vs">VS</div>
-              <div class="team away">
-                <div class="team-badge black-badge">בית"ר</div>
-                <span>בית"ר ירושלים</span>
-              </div>
-            </div>
-            <div class="game-info">🏟️ אצטדיון בלומפילד · 20:30</div>
-          </div>
-
-          <div class="game-card upcoming-card">
-            <div class="game-date">יום ג׳ · 26 במאי 2026</div>
-            <div class="game-teams">
-              <div class="team home">
-                <div class="team-badge yellow-badge">מכב"א</div>
-                <span>מכבי תל אביב</span>
-              </div>
-              <div class="vs">VS</div>
-              <div class="team away">
-                <div class="team-badge red-badge">הפ"א</div>
-                <span>הפועל תל אביב</span>
-              </div>
-            </div>
-            <div class="game-info">🏟️ אצטדיון בלומפילד · 21:00</div>
-          </div>
-
-        </div>
+        <div id="upcoming-featured"></div>
+        <div id="upcoming-grid" class="games-grid"></div>
       </div>
     </section>
 
@@ -106,93 +35,7 @@
     <section class="section dark-section" id="results">
       <div class="container">
         <h2 class="section-title light"><span class="icon">🏆</span> משחקים ששוחקו</h2>
-        <div class="results-list">
-
-          <div class="result-card win">
-            <div class="result-date">22 אפריל 2026</div>
-            <div class="result-teams">
-              <span class="result-team">מכבי תל אביב</span>
-              <div class="result-score">
-                <span class="score-num">3</span>
-                <span class="score-sep">—</span>
-                <span class="score-num">1</span>
-              </div>
-              <span class="result-team">בית"ר ירושלים</span>
-            </div>
-            <div class="result-badge win-badge">ניצחון</div>
-          </div>
-
-          <div class="result-card win">
-            <div class="result-date">15 אפריל 2026</div>
-            <div class="result-teams">
-              <span class="result-team">הפועל תל אביב</span>
-              <div class="result-score">
-                <span class="score-num">0</span>
-                <span class="score-sep">—</span>
-                <span class="score-num">2</span>
-              </div>
-              <span class="result-team">מכבי תל אביב</span>
-            </div>
-            <div class="result-badge win-badge">ניצחון</div>
-          </div>
-
-          <div class="result-card draw">
-            <div class="result-date">7 אפריל 2026</div>
-            <div class="result-teams">
-              <span class="result-team">מכבי תל אביב</span>
-              <div class="result-score">
-                <span class="score-num">1</span>
-                <span class="score-sep">—</span>
-                <span class="score-num">1</span>
-              </div>
-              <span class="result-team">מכבי חיפה</span>
-            </div>
-            <div class="result-badge draw-badge">תיקו</div>
-          </div>
-
-          <div class="result-card win">
-            <div class="result-date">31 מרץ 2026</div>
-            <div class="result-teams">
-              <span class="result-team">הפועל חיפה</span>
-              <div class="result-score">
-                <span class="score-num">0</span>
-                <span class="score-sep">—</span>
-                <span class="score-num">4</span>
-              </div>
-              <span class="result-team">מכבי תל אביב</span>
-            </div>
-            <div class="result-badge win-badge">ניצחון</div>
-          </div>
-
-          <div class="result-card loss">
-            <div class="result-date">23 מרץ 2026</div>
-            <div class="result-teams">
-              <span class="result-team">מכבי תל אביב</span>
-              <div class="result-score">
-                <span class="score-num">1</span>
-                <span class="score-sep">—</span>
-                <span class="score-num">2</span>
-              </div>
-              <span class="result-team">הפועל באר שבע</span>
-            </div>
-            <div class="result-badge loss-badge">הפסד</div>
-          </div>
-
-          <div class="result-card win">
-            <div class="result-date">16 מרץ 2026</div>
-            <div class="result-teams">
-              <span class="result-team">מכבי תל אביב</span>
-              <div class="result-score">
-                <span class="score-num">5</span>
-                <span class="score-sep">—</span>
-                <span class="score-num">0</span>
-              </div>
-              <span class="result-team">הפועל נצרת</span>
-            </div>
-            <div class="result-badge win-badge">ניצחון</div>
-          </div>
-
-        </div>
+        <div id="results-list" class="results-list"></div>
       </div>
     </section>
 
@@ -410,5 +253,6 @@
     </div>
   </footer>
 
+  <script src="app.js"></script>
 </body>
 </html>
