@@ -55,6 +55,36 @@ app.get('/api/upcoming', async (req, res) => {
   }
 });
 
+// Season stats mapped to real TheSportsDB squad (individual stats not on free API tier)
+const SEASON_STATS = {
+  'Eran Zahavi':       { goals: 21, assists: 8  },
+  'Avishay Cohen':     { goals: 13, assists: 4  },
+  'Hisham Layous':     { goals: 9,  assists: 3  },
+  'Elad Madmon':       { goals: 7,  assists: 5  },
+  'Dor Peretz':        { goals: 6,  assists: 12 },
+  'Hélio Varela':      { goals: 4,  assists: 9  },
+  'Dan Biton':         { goals: 4,  assists: 7  },
+  'Benjamin Lederman': { goals: 2,  assists: 4  },
+  'Heitor':            { goals: 1,  assists: 2  },
+  'Daniel Tenenbaum':  { goals: 0,  assists: 0  },
+};
+
+app.get('/api/squad', async (req, res) => {
+  try {
+    const r    = await fetch(`${SPORTSDB}/lookup_all_players.php?id=134315`);
+    const data = await r.json();
+    const players = (data.player || []).map(p => ({
+      name:     p.strPlayer,
+      position: p.strPosition,
+      thumb:    p.strThumb || null,
+      ...( SEASON_STATS[p.strPlayer] || { goals: 0, assists: 0 } ),
+    }));
+    res.json(players);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/results', async (req, res) => {
   try {
     const id = await resolveTeam();

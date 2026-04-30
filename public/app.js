@@ -1,5 +1,32 @@
 const MACCABI_EN = 'Maccabi Tel Aviv';
 
+const HE_PLAYERS = {
+  'Eran Zahavi':       'ערן זהבי',
+  'Dor Peretz':        'דור פרץ',
+  'Avishay Cohen':     'אבישי כהן',
+  'Benjamin Lederman': 'בנג׳מין לדרמן',
+  'Dan Biton':         'דן ביטון',
+  'Daniel Tenenbaum':  'דניאל טננבאום',
+  'Elad Madmon':       'אלעד מדמון',
+  'Heitor':            'הייטור',
+  'Hélio Varela':      'הליו ורלה',
+  'Hisham Layous':     'הישאם לאיוס',
+};
+
+const HE_POSITIONS = {
+  'Attacker':           'חלוץ',
+  'Forward':            'חלוץ',
+  'Midfielder':         'קישורי',
+  'Defensive Midfield': 'קישורי הגנתי',
+  'Attacking Midfield': 'קישורי התקפי',
+  'Left Wing':          'כנפי שמאל',
+  'Right Wing':         'כנפי ימין',
+  'Centre-Back':        'בלם',
+  'Goalkeeper':         'שוער',
+  'Right Back':         'מגן ימין',
+  'Left Back':          'מגן שמאל',
+};
+
 const HE_TEAMS = {
   'Maccabi Tel Aviv':    'מכבי תל אביב',
   'Hapoel Beer Sheva':   'הפועל ב"ש',
@@ -53,7 +80,10 @@ function renderFeatured(ev) {
     <div class="game-card game-card-featured">
       <div class="featured-label">⚡ המשחק הבא</div>
       <div class="featured-body">
-        <div class="featured-date">${day} · ${full}${time ? ' · ' + time : ''}</div>
+        <div class="featured-datetime">
+          <span class="featured-date-chip">📅 ${day} · ${full}</span>
+          ${time ? `<span class="featured-time-chip">🕐 ${time}</span>` : ''}
+        </div>
         <div class="featured-teams">
           <div class="featured-team">
             ${logoImg(ev.strHomeTeamBadge, ev.strHomeTeam, 'lg')}
@@ -239,7 +269,62 @@ async function loadResults() {
   }
 }
 
+// ─── STATS TABLES ─────────────────────────────────────────────────
+function initials(name) {
+  return name.split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+}
+
+const AVATAR_COLORS = ['#003FA5','#002878','#1a2a4a','#0d3080','#001f6b'];
+function avatarColor(name) {
+  const idx = name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[idx];
+}
+
+function playerRow(player, rank, statKey, statLabel) {
+  const medal   = ['gold','silver','bronze'][rank - 1] || '';
+  const heName  = HE_PLAYERS[player.name]     || player.name;
+  const hePos   = HE_POSITIONS[player.position] || player.position;
+  const bg      = avatarColor(player.name);
+  const ini     = initials(player.name);
+  return `
+    <tr${rank === 1 ? ' class="rank-1"' : ''}>
+      <td><span class="rank ${medal}">${rank}</span></td>
+      <td>
+        <div class="player-cell">
+          <div class="player-avatar" style="background:${bg}">${ini}</div>
+          <div>
+            <div class="player-name">${heName}</div>
+            <div class="player-pos">${hePos}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="goals-count">${player[statKey]}</span></td>
+    </tr>`;
+}
+
+async function loadStats() {
+  try {
+    const res     = await fetch('/api/squad');
+    const players = await res.json();
+
+    const scorers  = [...players].filter(p => p.goals > 0)
+                                 .sort((a, b) => b.goals   - a.goals)
+                                 .slice(0, 6);
+    const assisters = [...players].filter(p => p.assists > 0)
+                                  .sort((a, b) => b.assists - a.assists)
+                                  .slice(0, 6);
+
+    const sb = document.getElementById('scorers-body');
+    const ab = document.getElementById('assisters-body');
+    if (sb) sb.innerHTML  = scorers.map((p, i)  => playerRow(p, i + 1, 'goals',   'גולים')).join('');
+    if (ab) ab.innerHTML  = assisters.map((p, i) => playerRow(p, i + 1, 'assists', 'בישולים')).join('');
+  } catch (e) {
+    console.error('stats error:', e);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   loadUpcoming();
   loadResults();
+  loadStats();
 });

@@ -184,10 +184,32 @@ body {
   gap: 16px;
 }
 
-.featured-date {
+.featured-datetime {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.featured-date-chip,
+.featured-time-chip {
+  padding: 6px 16px;
+  border-radius: 20px;
   font-size: 14px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.65);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.featured-date-chip {
+  background: rgba(255,255,255,0.15);
+  color: var(--white);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.featured-time-chip {
+  background: rgba(255,215,0,0.18);
+  color: var(--yellow);
+  border: 1px solid rgba(255,215,0,0.35);
 }
 
 .featured-teams {
