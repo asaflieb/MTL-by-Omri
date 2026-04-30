@@ -262,11 +262,78 @@ body {
   border-radius: var(--radius);
 }
 
-.loading-msg  { color: var(--gray); }
-.no-data-msg  { color: rgba(255,255,255,0.5); }
-.error-msg    { color: #e74c3c; background: rgba(231,76,60,0.1); }
+.loading-msg       { color: var(--gray); }
+.loading-msg-dark  { color: rgba(255,255,255,0.45); }
+.no-data-msg       { color: var(--gray); }
+.no-data-msg-dark  { color: rgba(255,255,255,0.45); }
+.error-msg         { color: #e74c3c; background: rgba(231,76,60,0.1); }
 
-/* ===== UPCOMING GAMES ===== */
+/* ===== CAROUSEL ===== */
+.carousel-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.carousel-viewport {
+  flex: 1;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.carousel-track {
+  display: flex;
+  gap: 20px;
+  transition: transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+.carousel-track .game-card {
+  flex: 0 0 calc((100% - 40px) / 3);
+  min-width: 200px;
+  margin: 0;
+}
+
+@media (max-width: 899px) {
+  .carousel-track .game-card { flex: 0 0 calc((100% - 20px) / 2); }
+}
+@media (max-width: 599px) {
+  .carousel-track .game-card { flex: 0 0 100%; }
+}
+
+.car-btn {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--blue);
+  color: var(--yellow);
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+  box-shadow: 0 2px 12px rgba(0,63,165,0.25);
+  padding-bottom: 2px;
+}
+
+.car-btn:hover:not(:disabled) {
+  background: var(--blue-dark);
+  transform: scale(1.1);
+}
+
+.car-btn:disabled {
+  opacity: 0.22;
+  cursor: default;
+  transform: none;
+}
+
+/* ===== UPCOMING GAMES (legacy fallback) ===== */
 .games-grid {
   display: flex;
   flex-wrap: wrap;
