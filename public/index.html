@@ -26,23 +26,29 @@
     <section class="section" id="upcoming">
       <div class="container">
         <h2 class="section-title"><span class="icon">📅</span> משחקים קרובים</h2>
-        <div class="games-grid">
 
-          <div class="game-card upcoming-card">
-            <div class="game-date">יום ב׳ · 5 במאי 2026</div>
-            <div class="game-teams">
+        <!-- NEXT GAME - FEATURED -->
+        <div class="game-card game-card-featured">
+          <div class="featured-label">⚡ המשחק הבא</div>
+          <div class="featured-body">
+            <div class="featured-date">יום ב׳ · 5 במאי 2026 · 20:00</div>
+            <div class="game-teams featured-teams">
               <div class="team home">
-                <div class="team-badge yellow-badge">מכב"א</div>
+                <div class="team-badge yellow-badge featured-badge">מכב"א</div>
                 <span>מכבי תל אביב</span>
               </div>
-              <div class="vs">VS</div>
+              <div class="vs featured-vs">VS</div>
               <div class="team away">
-                <div class="team-badge red-badge">הפ"ב</div>
+                <div class="team-badge red-badge featured-badge">הפ"ב</div>
                 <span>הפועל באר שבע</span>
               </div>
             </div>
-            <div class="game-info">🏟️ אצטדיון בלומפילד · 20:00</div>
+            <div class="game-info featured-info">🏟️ אצטדיון בלומפילד</div>
           </div>
+        </div>
+
+        <!-- REMAINING GAMES -->
+        <div class="games-grid">
 
           <div class="game-card upcoming-card">
             <div class="game-date">יום ב׳ · 12 במאי 2026</div>
@@ -197,7 +203,10 @@
 
           <!-- SCORERS -->
           <div class="table-card">
-            <h2 class="table-title"><span class="icon">⚽</span> טבלת המבקיעים</h2>
+            <div class="table-header-row">
+              <h2 class="table-title"><span class="icon">⚽</span> טבלת המבקיעים</h2>
+              <span class="season-badge">עונה 2025/26</span>
+            </div>
             <table class="stats-table">
               <thead>
                 <tr>
@@ -291,7 +300,10 @@
 
           <!-- ASSISTERS -->
           <div class="table-card">
-            <h2 class="table-title"><span class="icon">🎯</span> טבלת המבשלים</h2>
+            <div class="table-header-row">
+              <h2 class="table-title"><span class="icon">🎯</span> טבלת המבשלים</h2>
+              <span class="season-badge">עונה 2025/26</span>
+            </div>
             <table class="stats-table">
               <thead>
                 <tr>

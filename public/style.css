@@ -144,6 +144,82 @@ body {
 
 .icon { font-size: 28px; }
 
+/* ===== FEATURED GAME ===== */
+.game-card-featured {
+  background: linear-gradient(135deg, var(--blue-deep) 0%, var(--blue) 100%);
+  border-radius: var(--radius);
+  padding: 32px 36px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 40px rgba(0,63,165,0.3);
+  border-top: 4px solid var(--yellow);
+  position: relative;
+  overflow: hidden;
+}
+
+.game-card-featured::before {
+  content: '⚽';
+  position: absolute;
+  font-size: 180px;
+  opacity: 0.05;
+  bottom: -30px;
+  left: -20px;
+  line-height: 1;
+}
+
+.featured-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--yellow);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 20px;
+}
+
+.featured-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.featured-date {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 4px;
+}
+
+.featured-teams {
+  gap: 32px;
+}
+
+.featured-teams .team {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--white);
+  gap: 10px;
+}
+
+.featured-badge {
+  width: 64px !important;
+  height: 64px !important;
+  font-size: 13px !important;
+}
+
+.featured-vs {
+  font-size: 28px !important;
+  color: var(--yellow) !important;
+}
+
+.featured-info {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  border-top: 1px solid rgba(255,255,255,0.1) !important;
+  padding-top: 14px !important;
+  width: 100%;
+  text-align: center;
+}
+
 /* ===== UPCOMING GAMES ===== */
 .games-grid {
   display: grid;
@@ -332,14 +408,32 @@ body {
   box-shadow: var(--shadow);
 }
 
+.table-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
 .table-title {
   font-size: 20px;
   font-weight: 800;
   color: var(--blue-deep);
-  margin-bottom: 24px;
+  margin-bottom: 0;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.season-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  background: rgba(0,63,165,0.08);
+  border: 1.5px solid rgba(0,63,165,0.18);
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
 }
 
 .stats-table {
