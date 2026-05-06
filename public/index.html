@@ -31,6 +31,54 @@
       </div>
     </section>
 
+    <!-- LEAGUE TABLE -->
+    <section class="section" id="league-table-section">
+      <div class="container">
+        <div class="table-card">
+          <div class="table-header-row">
+            <h2 class="table-title"><span class="icon">📊</span> טבלת הסבב</h2>
+            <span class="season-badge">עונה 2025/26</span>
+          </div>
+          <div class="standings-scroll">
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>קבוצה</th><th>מ׳</th><th>נ׳</th>
+                  <th>ת׳</th><th>ה׳</th><th>שערים</th><th>נק׳</th>
+                </tr>
+              </thead>
+              <tbody id="standings-body">
+                <tr><td colspan="8" class="loading-msg" style="text-align:center;padding:20px">⏳ טוען...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLAYERS -->
+    <section class="section" id="players-section">
+      <div class="container">
+        <h2 class="section-title"><span class="icon">👥</span> שחקנים</h2>
+        <div class="player-filter-tabs" id="player-tabs">
+          <button class="player-tab active" data-pos="all">הכל</button>
+          <button class="player-tab" data-pos="G">שוערים</button>
+          <button class="player-tab" data-pos="D">הגנה</button>
+          <button class="player-tab" data-pos="M">קישור</button>
+          <button class="player-tab" data-pos="F">התקפה</button>
+        </div>
+        <div class="players-grid" id="players-grid">
+          <div class="loading-msg">⏳ טוען...</div>
+        </div>
+      </div>
+      <div class="player-modal-overlay" id="player-modal" onclick="closePlayerModal()">
+        <div class="player-modal" onclick="event.stopPropagation()">
+          <button class="modal-close" onclick="closePlayerModal()">✕</button>
+          <div id="player-modal-content"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- PLAYED GAMES -->
     <section class="section dark-section" id="results">
       <div class="container">

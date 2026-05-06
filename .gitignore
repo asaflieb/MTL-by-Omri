@@ -29,3 +29,6 @@ out/
 # Temp
 tmp/
 temp/
+
+# Claude Code
+.claude/
