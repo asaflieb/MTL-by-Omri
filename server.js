@@ -17,8 +17,9 @@ async function resolveSofascoreIds() {
   if (cachedTournamentId && cachedSeasonId) return { tid: cachedTournamentId, sid: cachedSeasonId };
   const r = await fetch(`${SOFASCORE}/team/${MACCABI_SC_ID}/events/last/0`, { headers: SC_HEADERS });
   const d = await r.json();
-  const ev = d.events?.find(e => e.tournament?.uniqueTournament);
-  if (!ev) throw new Error('No Sofascore events found');
+  // Filter specifically for Israeli Premier League (tid 266), not Cup/Europe
+  const ev = d.events?.find(e => e.tournament?.uniqueTournament?.id === 266);
+  if (!ev) throw new Error('No Premier League events found');
   cachedTournamentId = ev.tournament.uniqueTournament.id;
   cachedSeasonId     = ev.season?.id;
   return { tid: cachedTournamentId, sid: cachedSeasonId };
