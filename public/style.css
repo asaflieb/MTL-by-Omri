@@ -701,11 +701,20 @@ body {
 .details-pitch-col {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .details-pitch-col .pitch {
   margin: 6px 4px 12px;
 }
+
+/* Scale down player dots inside the column to fit */
+.details-pitch-col .player-dot   { width: 50px; }
+.details-pitch-col .player-photo-wrap { width: 34px; height: 34px; }
+.details-pitch-col .player-photo-fallback { width: 34px; height: 34px; font-size: 11px; }
+.details-pitch-col .dot-name     { font-size: 9px; }
+.details-pitch-col .player-goal-badge { font-size: 9px; padding: 1px 4px; }
+.details-pitch-col .sub-off-label { font-size: 9px; }
 
 @media (max-width: 640px) {
   .details-body { flex-direction: column-reverse; }
@@ -768,9 +777,10 @@ body {
 .tl-home .tl-min { margin-right: 0; margin-left: 5px; }
 .tl-away .tl-min { margin-left: 0; margin-right: 5px; }
 
+.tl-event  { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; }
 .tl-goal   { font-weight: 600; }
 .tl-card   { font-weight: 600; }
-.tl-sub     { display: inline-flex; flex-direction: row; align-items: center; gap: 4px; flex-wrap: wrap; }
+.tl-sub-names { display: inline-flex; align-items: center; gap: 4px; }
 .tl-sub-out { color: rgba(255,120,80,0.95); font-size: 10px; }
 .tl-sub-sep { color: rgba(255,255,255,0.3); font-size: 10px; }
 .tl-sub-in  { color: rgba(100,220,130,0.95); font-size: 10px; }

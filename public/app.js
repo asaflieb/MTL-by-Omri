@@ -424,20 +424,21 @@ function renderTimeline(events, homeTeam, awayTeam) {
 
   function eventCell(ev) {
     const min = ev.addedTime ? `${ev.time}+${ev.addedTime}′` : `${ev.time}′`;
+    const minSpan = `<span class="tl-min">${min}</span>`;
     if (ev.type === 'goal') {
       const name = shortName(ev.player, ev.playerHe);
       const tag  = ev.penalty ? ' (פנ׳)' : ev.ownGoal ? ' (אג)' : '';
-      return `<span class="tl-goal">⚽ ${name}${tag}</span><span class="tl-min">${min}</span>`;
+      return `<span class="tl-event"><span class="tl-goal">⚽ ${name}${tag}</span>${minSpan}</span>`;
     }
     if (ev.type === 'substitution') {
       const out = shortName(ev.playerOut, ev.playerOutHe);
       const inn = shortName(ev.playerIn,  ev.playerInHe);
-      return `<span class="tl-sub"><span class="tl-sub-out">⬇ ${out}</span><span class="tl-sub-sep">·</span><span class="tl-sub-in">⬆ ${inn}</span></span><span class="tl-min">${min}</span>`;
+      return `<span class="tl-event"><span class="tl-sub-names"><span class="tl-sub-out">⬇ ${out}</span><span class="tl-sub-sep">·</span><span class="tl-sub-in">⬆ ${inn}</span></span>${minSpan}</span>`;
     }
     if (ev.type === 'card') {
       const name  = shortName(ev.player, ev.playerHe);
       const icon  = ev.cardClass === 'red' ? '🟥' : ev.cardClass === 'yellowRed' ? '🟨🟥' : '🟨';
-      return `<span class="tl-card">${icon} ${name}</span><span class="tl-min">${min}</span>`;
+      return `<span class="tl-event"><span class="tl-card">${icon} ${name}</span>${minSpan}</span>`;
     }
     return '';
   }
@@ -565,9 +566,11 @@ async function toggleMatchDetails(eventId, cardEl) {
   if (!detailsEl) return;
 
   const isOpen = detailsEl.classList.contains('open');
-  document.querySelectorAll('.match-details.open').forEach(el => el.classList.remove('open'));
-  document.querySelectorAll('.expand-arrow.rotated').forEach(el => el.classList.remove('rotated'));
-  if (isOpen) return;
+  if (isOpen) {
+    detailsEl.classList.remove('open');
+    cardEl.querySelector('.expand-arrow')?.classList.remove('rotated');
+    return;
+  }
 
   const arrow = cardEl.querySelector('.expand-arrow');
 
