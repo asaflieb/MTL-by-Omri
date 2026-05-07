@@ -497,6 +497,23 @@ function parseFormationRows(starters, formationStr) {
   return { gk, rows };
 }
 
+function renderMotmBanner(home, away) {
+  if (!home?.starters?.length || !away?.starters?.length) return '';
+  const bestRated = (starters) =>
+    starters.reduce((best, p) => (p.rating || 0) > (best?.rating || 0) ? p : best, null);
+  const motmHome = bestRated(home.starters);
+  const motmAway = bestRated(away.starters);
+  const overallMotm = (motmHome?.rating || 0) >= (motmAway?.rating || 0) ? motmHome : motmAway;
+  if (!overallMotm || overallMotm.rating < 6) return '';
+  const motmName = shortName(overallMotm.name, overallMotm.nameHe);
+  return `<div class="motm-banner">
+    <span class="motm-star">⭐</span>
+    <span class="motm-title">שחקן המשחק</span>
+    <span class="motm-name">${motmName}</span>
+    <span class="motm-score">${overallMotm.rating.toFixed(1)}</span>
+  </div>`;
+}
+
 function renderPitch(home, away, homeTeam, awayTeam, events) {
   if (!home?.starters?.length || !away?.starters?.length)
     return '<p class="no-lineup">הרכבים לא זמינים</p>';
@@ -513,18 +530,13 @@ function renderPitch(home, away, homeTeam, awayTeam, events) {
     }
   }
 
-  // Best-rated player per team
+  // Best-rated players for MOTM highlight on pitch
   const bestRated = (starters) =>
     starters.reduce((best, p) => (p.rating || 0) > (best?.rating || 0) ? p : best, null);
   const motmHome = bestRated(home.starters);
   const motmAway = bestRated(away.starters);
   const motmHomeId = motmHome?.rating >= 6 ? motmHome.id : null;
   const motmAwayId = motmAway?.rating >= 6 ? motmAway.id : null;
-
-  // Overall MOTM banner (highest of the two)
-  const overallMotm = (motmHome?.rating || 0) >= (motmAway?.rating || 0) ? motmHome : motmAway;
-  const overallMotmValid = overallMotm?.rating >= 6;
-  const motmName = overallMotmValid ? shortName(overallMotm.name, overallMotm.nameHe) : null;
 
   const makeRows = (gk, rows, isMaccabi, isHome) => {
     const motmSet = new Set([motmHomeId, motmAwayId].filter(Boolean));
@@ -539,15 +551,7 @@ function renderPitch(home, away, homeTeam, awayTeam, events) {
   const hLabel = home.formation ? `${heTeam(homeTeam)} · ${home.formation}` : heTeam(homeTeam);
   const aLabel = away.formation ? `${heTeam(awayTeam)} · ${away.formation}` : heTeam(awayTeam);
 
-  const motmBanner = motmName ? `
-    <div class="motm-banner">
-      <span class="motm-star">⭐</span>
-      <span class="motm-title">שחקן המשחק</span>
-      <span class="motm-name">${motmName}</span>
-      <span class="motm-score">${overallMotm.rating.toFixed(1)}</span>
-    </div>` : '';
-
-  return `${motmBanner}<div class="pitch">
+  return `<div class="pitch">
     <div class="pitch-team-label">${aLabel}</div>
     <div class="pitch-half">${makeRows(aGK, aRows, !isMaccabiHome, false)}</div>
     <div class="pitch-divider"></div>
@@ -572,9 +576,17 @@ async function toggleMatchDetails(eventId, cardEl) {
     detailsEl.classList.add('open');
     try {
       const data = await fetch(`/api/match/${eventId}/details`).then(r => r.json());
-      detailsEl.innerHTML =
-        renderPitch(data.home, data.away, cardEl.dataset.home, cardEl.dataset.away, data.events) +
-        renderTimeline(data.events, cardEl.dataset.home, cardEl.dataset.away);
+      const homeTeam = cardEl.dataset.home;
+      const awayTeam = cardEl.dataset.away;
+      const motmHtml     = renderMotmBanner(data.home, data.away);
+      const pitchHtml    = renderPitch(data.home, data.away, homeTeam, awayTeam, data.events);
+      const timelineHtml = renderTimeline(data.events, homeTeam, awayTeam);
+      detailsEl.innerHTML = `
+        ${motmHtml}
+        <div class="details-body">
+          <div class="details-timeline-col">${timelineHtml}</div>
+          <div class="details-pitch-col">${pitchHtml}</div>
+        </div>`;
       detailsEl.dataset.loaded = '1';
     } catch {
       detailsEl.innerHTML = '<div class="error-msg" style="margin:12px">⚠️ שגיאה בטעינת פרטים</div>';
