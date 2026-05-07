@@ -692,14 +692,15 @@ body {
 }
 
 .details-timeline-col {
-  flex: 1;
+  flex: 0 0 auto;
+  width: 200px;
   min-width: 0;
   padding-top: 8px;
 }
 
 .details-pitch-col {
-  flex: 0 0 auto;
-  width: 260px;
+  flex: 1;
+  min-width: 0;
 }
 
 .details-pitch-col .pitch {
@@ -769,8 +770,9 @@ body {
 
 .tl-goal   { font-weight: 600; }
 .tl-card   { font-weight: 600; }
-.tl-sub    { display: inline-flex; flex-direction: column; gap: 1px; }
+.tl-sub     { display: inline-flex; flex-direction: row; align-items: center; gap: 4px; flex-wrap: wrap; }
 .tl-sub-out { color: rgba(255,120,80,0.95); font-size: 10px; }
+.tl-sub-sep { color: rgba(255,255,255,0.3); font-size: 10px; }
 .tl-sub-in  { color: rgba(100,220,130,0.95); font-size: 10px; }
 
 /* Pitch */

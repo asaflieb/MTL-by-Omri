@@ -432,7 +432,7 @@ function renderTimeline(events, homeTeam, awayTeam) {
     if (ev.type === 'substitution') {
       const out = shortName(ev.playerOut, ev.playerOutHe);
       const inn = shortName(ev.playerIn,  ev.playerInHe);
-      return `<span class="tl-sub"><span class="tl-sub-out">⬇ ${out}</span><span class="tl-sub-in">⬆ ${inn}</span></span><span class="tl-min">${min}</span>`;
+      return `<span class="tl-sub"><span class="tl-sub-out">⬇ ${out}</span><span class="tl-sub-sep">·</span><span class="tl-sub-in">⬆ ${inn}</span></span><span class="tl-min">${min}</span>`;
     }
     if (ev.type === 'card') {
       const name  = shortName(ev.player, ev.playerHe);
