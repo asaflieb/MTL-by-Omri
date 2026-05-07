@@ -732,68 +732,57 @@ body {
   .details-pitch-col    { order: 1; }
 }
 
-/* Goals */
-/* Timeline */
+/* ── Timeline (3-column classic: home | min | away) ── */
 .timeline-wrap {
-  padding: 8px 12px 12px;
-  display: flex;
-  justify-content: flex-start;
-  overflow-y: visible;
+  padding: 8px 6px 12px;
+  overflow-x: hidden;
 }
 
 .timeline {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 11px;
+  table-layout: fixed;
   direction: rtl;
 }
 
-.timeline thead th {
-  color: var(--yellow);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 16px 8px;
-  text-align: center;
-  border-bottom: 1px solid rgba(255,255,255,0.12);
-}
+.tl-th-home { text-align: right;  color: var(--yellow); font-size: 10px; font-weight: 700; padding: 0 4px 6px; width: 44%; border-bottom: 1px solid rgba(255,255,255,0.12); }
+.tl-th-away { text-align: left;   color: rgba(255,255,255,0.45); font-size: 10px; font-weight: 700; padding: 0 4px 6px; width: 44%; border-bottom: 1px solid rgba(255,255,255,0.12); }
+.tl-th-min  { text-align: center; width: 12%; border-bottom: 1px solid rgba(255,255,255,0.12); }
 
-.timeline tbody tr {
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
+.timeline tbody tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
 .timeline tbody tr:last-child { border-bottom: none; }
 
-.timeline td {
-  padding: 6px 10px;
+.tl-home {
+  text-align: right;
+  padding: 5px 4px;
   vertical-align: middle;
-  white-space: nowrap;
   color: rgba(255,255,255,0.9);
-  text-align: center;
+  word-break: break-word;
 }
-
-.tl-home { text-align: center; }
-.tl-away { text-align: center; }
+.tl-away {
+  text-align: left;
+  padding: 5px 4px;
+  vertical-align: middle;
+  color: rgba(255,255,255,0.6);
+  word-break: break-word;
+}
 .tl-empty { opacity: 0; }
 
-.tl-min {
-  display: inline-block;
-  color: var(--yellow);
-  font-weight: 700;
+.tl-min-cell {
+  text-align: center;
+  padding: 5px 2px;
+  vertical-align: middle;
   font-size: 10px;
-  margin-right: 5px;
-  margin-left: 5px;
+  font-weight: 700;
+  color: var(--yellow);
   white-space: nowrap;
 }
 
-.tl-home .tl-min { margin-right: 0; margin-left: 5px; }
-.tl-away .tl-min { margin-left: 0; margin-right: 5px; }
-
-.tl-event  { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; }
-.tl-goal   { font-weight: 600; }
-.tl-card   { font-weight: 600; }
-.tl-sub-names { display: inline-flex; align-items: center; gap: 4px; }
+.tl-goal { font-weight: 600; display: block; }
+.tl-card { font-weight: 600; display: block; }
+.tl-sub  { display: flex; flex-direction: column; gap: 1px; }
 .tl-sub-out { color: rgba(255,120,80,0.95); font-size: 10px; }
-.tl-sub-sep { color: rgba(255,255,255,0.3); font-size: 10px; }
 .tl-sub-in  { color: rgba(100,220,130,0.95); font-size: 10px; }
 
 /* Pitch */

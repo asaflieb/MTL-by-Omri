@@ -422,37 +422,43 @@ function renderTimeline(events, homeTeam, awayTeam) {
   const homeHe = heTeam(homeTeam);
   const awayHe = heTeam(awayTeam);
 
-  function eventCell(ev) {
-    const min = ev.addedTime ? `${ev.time}+${ev.addedTime}′` : `${ev.time}′`;
-    const minSpan = `<span class="tl-min">${min}</span>`;
+  function cellContent(ev) {
     if (ev.type === 'goal') {
       const name = shortName(ev.player, ev.playerHe);
       const tag  = ev.penalty ? ' (פנ׳)' : ev.ownGoal ? ' (אג)' : '';
-      return `<span class="tl-event"><span class="tl-goal">⚽ ${name}${tag}</span>${minSpan}</span>`;
+      return `<span class="tl-goal">⚽ ${name}${tag}</span>`;
     }
     if (ev.type === 'substitution') {
       const out = shortName(ev.playerOut, ev.playerOutHe);
       const inn = shortName(ev.playerIn,  ev.playerInHe);
-      return `<span class="tl-event"><span class="tl-sub-names"><span class="tl-sub-out">⬇ ${out}</span><span class="tl-sub-sep">·</span><span class="tl-sub-in">⬆ ${inn}</span></span>${minSpan}</span>`;
+      return `<span class="tl-sub"><span class="tl-sub-out">⬇ ${out}</span><span class="tl-sub-in">⬆ ${inn}</span></span>`;
     }
     if (ev.type === 'card') {
-      const name  = shortName(ev.player, ev.playerHe);
-      const icon  = ev.cardClass === 'red' ? '🟥' : ev.cardClass === 'yellowRed' ? '🟨🟥' : '🟨';
-      return `<span class="tl-event"><span class="tl-card">${icon} ${name}</span>${minSpan}</span>`;
+      const name = shortName(ev.player, ev.playerHe);
+      const icon = ev.cardClass === 'red' ? '🟥' : ev.cardClass === 'yellowRed' ? '🟨🟥' : '🟨';
+      return `<span class="tl-card">${icon} ${name}</span>`;
     }
     return '';
   }
 
   const rows = events.map(ev => {
-    const cell = eventCell(ev);
+    const min = ev.addedTime ? `${ev.time}+${ev.addedTime}′` : `${ev.time}′`;
+    const cell = cellContent(ev);
+    if (!cell) return '';
     const homeCell = ev.isHome  ? `<td class="tl-home">${cell}</td>` : `<td class="tl-home tl-empty"></td>`;
     const awayCell = !ev.isHome ? `<td class="tl-away">${cell}</td>` : `<td class="tl-away tl-empty"></td>`;
-    return `<tr>${homeCell}${awayCell}</tr>`;
+    return `<tr>${homeCell}<td class="tl-min-cell">${min}</td>${awayCell}</tr>`;
   }).join('');
 
   return `<div class="timeline-wrap">
     <table class="timeline">
-      <thead><tr><th>${homeHe}</th><th>${awayHe}</th></tr></thead>
+      <thead>
+        <tr>
+          <th class="tl-th-home">${homeHe}</th>
+          <th class="tl-th-min"></th>
+          <th class="tl-th-away">${awayHe}</th>
+        </tr>
+      </thead>
       <tbody>${rows}</tbody>
     </table>
   </div>`;
