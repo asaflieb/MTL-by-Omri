@@ -685,23 +685,21 @@ body {
 
 /* ── Two-column layout inside expanded match ── */
 .details-body {
-  display: flex;
-  align-items: flex-start;
-  padding: 0 8px 16px;
+  display: grid;
+  grid-template-columns: 200px 1fr; /* RTL: timeline(right)=200px, pitch(left)=auto */
   gap: 8px;
+  padding: 0 8px 16px;
+  overflow: hidden;
 }
 
 .details-timeline-col {
-  flex: 0 0 auto;
-  width: 200px;
-  min-width: 0;
   padding-top: 8px;
+  overflow: hidden;
 }
 
 .details-pitch-col {
-  flex: 1;
-  min-width: 0;
   overflow: hidden;
+  min-width: 0;
 }
 
 .details-pitch-col .pitch {
@@ -709,16 +707,20 @@ body {
 }
 
 /* Scale down player dots inside the column to fit */
-.details-pitch-col .player-dot   { width: 50px; }
+.details-pitch-col .player-dot        { width: 50px; }
 .details-pitch-col .player-photo-wrap { width: 34px; height: 34px; }
 .details-pitch-col .player-photo-fallback { width: 34px; height: 34px; font-size: 11px; }
-.details-pitch-col .dot-name     { font-size: 9px; }
+.details-pitch-col .dot-name          { font-size: 9px; }
 .details-pitch-col .player-goal-badge { font-size: 9px; padding: 1px 4px; }
-.details-pitch-col .sub-off-label { font-size: 9px; }
+.details-pitch-col .sub-off-label     { font-size: 9px; }
 
 @media (max-width: 640px) {
-  .details-body { flex-direction: column-reverse; }
-  .details-pitch-col { width: 100%; }
+  .details-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+  .details-timeline-col { order: 2; }
+  .details-pitch-col    { order: 1; }
 }
 
 /* Goals */
