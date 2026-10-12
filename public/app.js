@@ -1,194 +1,13 @@
-const MACCABI_EN = 'Maccabi Tel Aviv';
-
-const HE_PLAYERS = {
-  // ── מכבי תל אביב ──
-  'Dor Peretz':           'דור פרץ',
-  'Hélio Varela':         'הליו ורלה',
-  'Heitor':               'הייטור',
-  'Ben Lederman':         'בנג׳מין לדרמן',
-  'Benjamin Lederman':    'בנג׳מין לדרמן',
-  'Elad Madmon':          'אלעד מדמון',
-  'Sagiv Jehezkel':       'סגיב יחזקאל',
-  'Emir Sahiti':          'אמיר סהיטי',
-  'Ion Nicolaescu':       'יון ניקולאסקו',
-  'Kervin Andrade':       'קרבין אנדראדה',
-  'Yonas Malede':         'יונס מלדה',
-  'Ilay Ben Simon':       'אילאי בן שמעון',
-  'Issouf Sissokho':      'איסוף סיסוקו',
-  'Osher Davida':         'אושר דוידה',
-  'Ido Shahar':           'עידו שחר',
-  'Itamar Noy':           'איתמר נוי',
-  'Lotem Asres':          'לותם אסרס',
-  'Roee Magor':           'רועי מגור',
-  'Mohamed Camara':       'מוחמד קמארה',
-  'Roy Revivo':           'רועי רביבו',
-  'Tyrese Asante':        'טיריס אסנטה',
-  'Raz Shlomo':           'רז שלומו',
-  'Kristijan Belić':      'קריסטיאן בליץ׳',
-  'Saied Abu Farchi':     'סעיד אבו פרחי',
-  'Denny Gropper':        'דני גרופר',
-  'Noam Ben Harosh':      'נועם בן הרוש',
-  'Itai Ben Hamo':        'איתי בן המו',
-  'Amit Kredi':           'עמית קרדי',
-  'Eran Zahavi':          'ערן זהבי',
-  'Avishay Cohen':        'אבישי כהן',
-  'Dan Biton':            'דן ביטון',
-  'Daniel Tenenbaum':     'דניאל טננבאום',
-  'Hisham Layous':        'הישאם לאיוס',
-  'Ofek Melika':          'אופק מליקה',
-
-  // ── שחקנים ישראלים בליגה ──
-  'Dolev Haziza':         'דולב חזיזה',
-  'Omer Atzili':          'עומר עציל',
-  'Guy Melamed':          'גיא מלמד',
-  'Naor Sabag':           'נאור שבג',
-  'Eylon Almog':          'איילון אלמוג',
-  'Niv Eliasi':           'ניב אליאסי',
-  'Guy Mizrahi':          'גיא מזרחי',
-  'Or Blorian':           'אור בלוריאן',
-  'Matan Baltaxa':        'מתן בלטקסה',
-  'Eden Shamir':          'עדן שמיר',
-  'Ilay Elmkies':         'אילאי אלמקיס',
-  'Ilay Tamam':           'אילאי תמם',
-  'Omer Abuhav':          'עומר אבוחב',
-  'Omer Agvadish':        'עומר אגבדיש',
-  'Shon Goldberg':        'שון גולדברג',
-  'Kenny Saief':          'קני סאיף',
-  'Sali Ginon':           'סאלי גינון',
-  'Elad Amir':            'אלעד אמיר',
-  'Roy Baranes':          'רועי ברנס',
-  'Niv Gotlieb':          'ניב גוטליב',
-  'Niv Fliter':           'ניב פליטר',
-  'Harel Shalom':         'הראל שלום',
-  'Shay Ben David':       'שי בן דוד',
-  'Shay Elias':           'שי אליאס',
-  'Liran Rotman':         'לירן רוטמן',
-  'Liran Sardal':         'לירן סרדל',
-  'Lior Gliklich':        'ליאור גליקליך',
-  'Yarden Shua':          'ירדן שוע',
-  'Yarden Cohen':         'ירדן כהן',
-  'Gil Cohen':            'גיל כהן',
-  'Gil Itzhak':           'גיל יצחק',
-  'Doron Leidner':        'דורון ליידנר',
-  'Yoav Gerafi':          'יואב גרפי',
-  'Roy Korine':           'רועי קורין',
-  'Roi Mishpati':         'רועי משפטי',
-  'Matan Beit Yaakov':    'מתן בית יעקב',
-  'Ofir Benbenishti':     'אופיר בנבנישתי',
-  'Ohad Almagor':         'אוהד אלמגור',
-  'Alon Azugi':           'אלון אזוגי',
-  'Alon Turgeman':        'אלון תורגמן',
-  'Avi Turgeman':         'אבי תורגמן',
-  'Oren Biton':           'אורן ביטון',
-  'Ovadia Dervish':       'עובדיה דרויש',
-  'Shalev Harush':        'שלו חרוש',
-  'Shavit Elgabi':        'שביט אלגבי',
-  'Stav Torial':          'סתיו טוריאל',
-  'Tal Archel':           'טל ארכל',
-  'Yair Mordechai':       'יאיר מרדכי',
-  'Yarin Levi':           'ירין לוי',
-  'Yarin Swisa':          'ירין סוויסה',
-  'Yinon Faingezicht':    'ינון פיינגציכט',
-  'Yonatan Kay Laish':    'יונתן קיי לייש',
-  'Ziv Ben Shimol':       'זיו בן שימול',
-  'Ziv Morgan':           'זיו מורגן',
-  'Zahi Ahmed':           'זאהי אחמד',
-  'Nadav Zamir':          'נדב זמיר',
-  'Navot Ratner':         'נבות רטנר',
-  'Noam Gil Melamud':     'נועם גיל מלמוד',
-  'Ofek Nadir':           'אופק נדיר',
-  'Ron Unger':            'רון אונגר',
-  'Ronen Peretz':         'רונן פרץ',
-  'Roee Levi':            'רועי לוי',
-  'Maor Yashilirmak':     'מאור ישילירמק',
-  'Michael Ohana':        'מיכאל אוחנה',
-  'Mohamad Abu Rumi':     'מוחמד אבו רומי',
-  'Mohamad Amer':         'מוחמד עאמר',
-  'Mohammed Abu Nil':     'מוחמד אבו ניל',
-  'Mor Barami':           'מור בראמי',
-  'Muhamad Shaker':       'מוחמד שאקר',
-  'Maron Ghantous':       'מרון ע׳נטוס',
-  'Adi Menachem Yona':    'עדי מנחם יונה',
-  'Ahmad Salman':         'אחמד סלמאן',
-  'Amir Chaim Ganah':     'אמיר חיים גנה',
-  'Amit Lemkin':          'עמית למקין',
-  'Anas Mahamid':         'אנאס מחמיד',
-  'Ariel Sharetzky':      'אריאל שרצקי',
-  'Assaf Tzur':           'אסף צור',
-  'Ayad Habashi':         'איאד חבשי',
-  'Bilal Shaheen':        'בילאל שאהין',
-  'Daniel Joulani':       'דניאל ג׳ולאני',
-  'Eliel Peretz':         'אליאל פרץ',
-  'Eliyahu Belilti':      'אליהו בלילתי',
-  'Ethane Azoulay':       'אתן אזולאי',
-  'Fares Abu Akel':       'פארס אבו עקל',
-  'Hassan Hilu':          'חסן חילו',
-  'Ido Sharon':           'עידו שרון',
-  'Itay Zada':            'איתי זדה',
-  'Iyad Khalaili':        'איאד חלאילי',
-  'Jubayer Bushnaq':      'ג׳ובייר בושנק',
-  'Lisav Naif Eissat':    'ליסב נאיף עיסאת',
-  'Abdallah Jaber':       'עבדאללה ג׳אבר',
-  'Ali Mohamed':          'עלי מוחמד',
-  'Peter Michael':        'פיטר מיכאל',
-  'Artur Miranyan':       'ארתור מירניאן',
-  'Sandro Altunashvili':  'סנדרו אלטונשווילי',
-  'Awka Ashta':           'עוקה אשתא',
-};
-
-const HE_POSITIONS = {
-  'F':                  'חלוץ',
-  'M':                  'קישורי',
-  'D':                  'מגן',
-  'G':                  'שוער',
-  'Attacker':           'חלוץ',
-  'Forward':            'חלוץ',
-  'Midfielder':         'קישורי',
-  'Defensive Midfield': 'קישורי הגנתי',
-  'Attacking Midfield': 'קישורי התקפי',
-  'Left Wing':          'כנפי שמאל',
-  'Right Wing':         'כנפי ימין',
-  'Centre-Back':        'בלם',
-  'Goalkeeper':         'שוער',
-  'Right Back':         'מגן ימין',
-  'Left Back':          'מגן שמאל',
-};
-
-const HE_TEAMS = {
-  'Maccabi Tel Aviv':              'מכבי תל אביב',
-  'Hapoel Beer Sheva':             'הפועל ב"ש',
-  "Hapoel Be'er Sheva":            'הפועל ב"ש',
-  'Maccabi Haifa':                 'מכבי חיפה',
-  'Beitar Jerusalem':              'בית"ר ירושלים',
-  'Hapoel Tel Aviv':               'הפועל ת"א',
-  'Hapoel Tel-Aviv':               'הפועל ת"א',
-  'Hapoel Haifa':                  'הפועל חיפה',
-  'Hapoel Petah Tikva':            'הפועל פ"ת',
-  'Hapoel Petach Tikva':           'הפועל פ"ת',
-  'Maccabi Petah Tikva':           'מכבי פ"ת',
-  'Maccabi Petach Tikva':          'מכבי פ"ת',
-  'Bnei Sakhnin':                  'בני סכנין',
-  'Bnei Yehuda':                   'בני יהודה',
-  'Ashdod FC':                     'מ.ס. אשדוד',
-  'FC Ashdod':                     'מ.ס. אשדוד',
-  'Ashdod SC':                     'מ.ס. אשדוד',
-  'Hapoel Hadera':                 'הפועל חדרה',
-  'Ironi Kiryat Shmona':           'איר. קרית שמונה',
-  'Hapoel Ironi Kiryat Shmona':    'איר. קרית שמונה',
-  'Maccabi Netanya':               'מכבי נתניה',
-  'Hapoel Jerusalem':              'הפועל ירושלים',
-  'Ironi Tiberias':                'איר. טבריה',
-  'Ironi Dorot Tiberias':          'איר. טבריה',
-  'Maccabi Bney Reine':            'מכבי בני ריינה',
-  'Maccabi Yafo':                  'מכבי יפו',
-  'Hapoel Rishon Lezion':          'הפועל ראשון לציון',
-};
+const MACCABI = 'מכבי תל אביב';
 
 const HE_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 const HE_DAYS   = ['יום א׳','יום ב׳','יום ג׳','יום ד׳','יום ה׳','יום ו׳','שבת'];
 
-function heTeam(name) {
-  return HE_TEAMS[name] || name;
+// Escape text for safe use inside HTML attributes (team names contain quotes, e.g. בית"ר)
+function esc(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function formatDate(dateStr, timeStr) {
@@ -202,7 +21,7 @@ function formatDate(dateStr, timeStr) {
 function logoImg(badgeUrl, teamName, size) {
   if (!badgeUrl) return '';
   const cls = size === 'lg' ? 'team-logo-lg' : 'team-logo';
-  return `<img src="${badgeUrl}" alt="${heTeam(teamName)}" class="${cls}" onerror="this.classList.add('hidden')">`;
+  return `<img src="${badgeUrl}" alt="${esc(teamName)}" class="${cls}" onerror="this.classList.add('hidden')">`;
 }
 
 // ─── FEATURED CARD ────────────────────────────────────────────────
@@ -228,17 +47,18 @@ function renderFeatured(ev) {
           <div class="featured-teams">
             <div class="featured-team">
               ${logoImg(ev.strHomeTeamBadge, ev.strHomeTeam, 'lg')}
-              <span class="featured-team-name">${heTeam(ev.strHomeTeam)}</span>
+              <span class="featured-team-name">${ev.strHomeTeam}</span>
             </div>
             <div class="featured-vs">VS</div>
             <div class="featured-team">
               ${logoImg(ev.strAwayTeamBadge, ev.strAwayTeam, 'lg')}
-              <span class="featured-team-name">${heTeam(ev.strAwayTeam)}</span>
+              <span class="featured-team-name">${ev.strAwayTeam}</span>
             </div>
           </div>
           ${ev.strVenue ? `<div class="featured-venue">🏟️ ${ev.strVenue}</div>` : ''}
           <button class="lineup-toggle-btn"
-                  onclick="toggleUpcomingLineup('${ev.idEvent}','${ev.strHomeTeam}','${ev.strAwayTeam}',this)">
+                  data-id="${esc(ev.idEvent)}" data-home="${esc(ev.strHomeTeam)}" data-away="${esc(ev.strAwayTeam)}"
+                  onclick="toggleUpcomingLineup(this)">
             הרכבים ▼
           </button>
         </div>
@@ -247,7 +67,8 @@ function renderFeatured(ev) {
     </div>`;
 }
 
-async function toggleUpcomingLineup(eventId, homeTeam, awayTeam, btn) {
+async function toggleUpcomingLineup(btn) {
+  const { id: eventId, home: homeTeam, away: awayTeam } = btn.dataset;
   const el = document.getElementById(`upcoming-lineup-${eventId}`);
   if (!el) return;
 
@@ -284,19 +105,19 @@ function renderGameCard(ev) {
     ev.dateEventLocal || ev.dateEvent,
     ev.strTimeLocal  || ev.strTime
   );
-  const location = ev.strHomeTeam === MACCABI_EN ? '🏠 ביתי' : '✈️ חוצות';
+  const location = ev.strHomeTeam === MACCABI ? '🏠 ביתי' : '✈️ חוצות';
   return `
     <div class="game-card">
       <div class="game-date">${day} · ${full}</div>
       <div class="game-teams">
         <div class="team">
           ${logoImg(ev.strHomeTeamBadge, ev.strHomeTeam, 'sm')}
-          <span>${heTeam(ev.strHomeTeam)}</span>
+          <span>${ev.strHomeTeam}</span>
         </div>
         <div class="vs">VS</div>
         <div class="team">
           ${logoImg(ev.strAwayTeamBadge, ev.strAwayTeam, 'sm')}
-          <span>${heTeam(ev.strAwayTeam)}</span>
+          <span>${ev.strAwayTeam}</span>
         </div>
       </div>
       <div class="game-info">${location}${time ? ' · ' + time : ''}</div>
@@ -371,7 +192,7 @@ function outcome(ev) {
   const home = parseInt(ev.intHomeScore);
   const away = parseInt(ev.intAwayScore);
   if (isNaN(home) || isNaN(away)) return 'draw';
-  const isMaccabiHome = ev.strHomeTeam === MACCABI_EN;
+  const isMaccabiHome = ev.strHomeTeam === MACCABI;
   if (home === away) return 'draw';
   return (isMaccabiHome ? home > away : away > home) ? 'win' : 'loss';
 }
@@ -385,13 +206,13 @@ function renderResult(ev) {
     <div class="result-wrapper">
       <div class="result-card ${oc}"
            onclick="toggleMatchDetails('${ev.idEvent}', this)"
-           data-home="${ev.strHomeTeam}"
-           data-away="${ev.strAwayTeam}">
+           data-home="${esc(ev.strHomeTeam)}"
+           data-away="${esc(ev.strAwayTeam)}">
         <div class="result-date">${dateLabel}</div>
         <div class="result-teams">
           <div class="result-team-group">
             ${logoImg(ev.strHomeTeamBadge, ev.strHomeTeam, 'sm')}
-            <span class="result-team">${heTeam(ev.strHomeTeam)}</span>
+            <span class="result-team">${ev.strHomeTeam}</span>
           </div>
           <div class="result-score">
             <span class="score-num">${ev.intHomeScore ?? '?'}</span>
@@ -400,7 +221,7 @@ function renderResult(ev) {
           </div>
           <div class="result-team-group">
             ${logoImg(ev.strAwayTeamBadge, ev.strAwayTeam, 'sm')}
-            <span class="result-team">${heTeam(ev.strAwayTeam)}</span>
+            <span class="result-team">${ev.strAwayTeam}</span>
           </div>
         </div>
         <div class="result-badge ${oc}-badge">${labels[oc]}</div>
@@ -413,14 +234,14 @@ function renderResult(ev) {
 // ─── MATCH DETAILS: GOALS + LINEUP ───────────────────────────────
 
 function shortName(name, nameHe) {
-  return nameHe || HE_PLAYERS[name] || name.split(' ').slice(-1)[0];
+  return nameHe || name;
 }
 
 function renderTimeline(events, homeTeam, awayTeam) {
   if (!events?.length) return '';
 
-  const homeHe = heTeam(homeTeam);
-  const awayHe = heTeam(awayTeam);
+  const homeHe = homeTeam;
+  const awayHe = awayTeam;
 
   function cellContent(ev) {
     if (ev.type === 'goal') {
@@ -466,14 +287,12 @@ function renderTimeline(events, homeTeam, awayTeam) {
 
 function playerDot(p, isMaccabi, isMotm, goalCount, subInGoalCount = 0) {
   const name     = shortName(p.name, p.nameHe);
-  const photoUrl = `https://img.sofascore.com/api/v1/player/${p.id}/image`;
-  const isGK     = p.position === 'G';
-  const subInDisplay = p.subOff?.subInNameHe || HE_PLAYERS[p.subOff?.subInName] || p.subOff?.subInName || null;
-  const subInAttr    = subInDisplay ? ` data-subin="${subInDisplay}"` : '';
-  const subInIdAttr  = p.subOff?.subInId ? ` data-subinid="${p.subOff.subInId}"` : '';
+  const subInDisplay = p.subOff?.subInNameHe || p.subOff?.subInName || null;
+  const subInAttr    = subInDisplay ? ` data-subin="${esc(subInDisplay)}"` : '';
+  const subInPhotoAttr = p.subOff?.subInPhoto ? ` data-subinphoto="${esc(p.subOff.subInPhoto)}"` : '';
   const subInGoalAttr = subInGoalCount > 0 ? ` data-subingoals="${subInGoalCount}"` : '';
   const sub      = p.subOff
-    ? `<span class="sub-off-label"${subInAttr}${subInIdAttr}${subInGoalAttr}>⬇ ${p.subOff.time}${p.subOff.addedTime ? '+' + p.subOff.addedTime : ''}′</span>`
+    ? `<span class="sub-off-label"${subInAttr}${subInPhotoAttr}${subInGoalAttr}>⬇ ${p.subOff.time}${p.subOff.addedTime ? '+' + p.subOff.addedTime : ''}′</span>`
     : '';
   const goalBadge = goalCount > 0
     ? `<span class="player-goal-badge">${goalCount > 1 ? `⚽×${goalCount}` : '⚽'}</span>`
@@ -481,7 +300,7 @@ function playerDot(p, isMaccabi, isMotm, goalCount, subInGoalCount = 0) {
   return `<div class="player-dot ${isMaccabi ? 'maccabi' : 'opponent'}${isMotm ? ' motm' : ''}">
     <div class="player-photo-outer">
       <div class="player-photo-wrap">
-        <img class="player-photo" src="${photoUrl}" alt="${name}"
+        <img class="player-photo" src="${p.photo || ''}" alt="${esc(name)}"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div class="player-photo-fallback">${p.number || '?'}</div>
       </div>
@@ -527,7 +346,7 @@ function renderPitch(home, away, homeTeam, awayTeam, events) {
   if (!home?.starters?.length || !away?.starters?.length)
     return '<p class="no-lineup">הרכבים לא זמינים</p>';
 
-  const isMaccabiHome = homeTeam === MACCABI_EN;
+  const isMaccabiHome = homeTeam === MACCABI;
   const { gk: hGK, rows: hRows } = parseFormationRows(home.starters, home.formation);
   const { gk: aGK, rows: aRows } = parseFormationRows(away.starters, away.formation);
 
@@ -557,8 +376,8 @@ function renderPitch(home, away, homeTeam, awayTeam, events) {
     ).join('');
   };
 
-  const hLabel = home.formation ? `${heTeam(homeTeam)} · ${home.formation}` : heTeam(homeTeam);
-  const aLabel = away.formation ? `${heTeam(awayTeam)} · ${away.formation}` : heTeam(awayTeam);
+  const hLabel = home.formation ? `${homeTeam} · ${home.formation}` : homeTeam;
+  const aLabel = away.formation ? `${awayTeam} · ${away.formation}` : awayTeam;
 
   return `<div class="pitch">
     <div class="pitch-team-label">${aLabel}</div>
@@ -702,18 +521,18 @@ function avatarColor(name) {
 
 function playerRow(player, rank, statKey, statLabel) {
   const medal   = ['gold','silver','bronze'][rank - 1] || '';
-  const heName  = HE_PLAYERS[player.name] || player.name;
-  const hePos   = HE_POSITIONS[player.position] || player.position;
+  const heName  = player.name;
+  const hePos   = heRole(player);
   const bg      = avatarColor(player.name);
   const ini     = initials(player.name);
-  const photoUrl = `https://img.sofascore.com/api/v1/player/${player.id}/image`;
+  const photoUrl = player.photo || '';
   return `
     <tr${rank === 1 ? ' class="rank-1"' : ''}>
       <td><span class="rank ${medal}">${rank}</span></td>
       <td>
         <div class="player-cell">
           <div class="stat-player-photo-wrap">
-            <img class="stat-player-photo" src="${photoUrl}" alt="${heName}"
+            <img class="stat-player-photo" src="${photoUrl}" alt="${esc(heName)}"
                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
             <div class="player-avatar" style="background:${bg}">${ini}</div>
           </div>
@@ -754,13 +573,13 @@ async function loadStandings() {
   try {
     const rows = await fetch('/api/standings').then(r => r.json());
     body.innerHTML = rows.map(r => {
-      const isMaccabi = r.teamName === MACCABI_EN;
-      const logo = `<img src="https://img.sofascore.com/api/v1/team/${r.teamId}/image"
+      const isMaccabi = r.teamName === MACCABI;
+      const logo = `<img src="${r.teamLogo}" alt=""
         class="team-logo" style="width:20px;height:20px;vertical-align:middle;margin-left:6px"
         onerror="this.style.display='none'">`;
       return `<tr class="${isMaccabi ? 'standings-maccabi' : ''}">
         <td><span class="rank">${r.position}</span></td>
-        <td class="player-cell">${logo}${heTeam(r.teamName)}</td>
+        <td class="player-cell">${logo}${r.teamName}</td>
         <td>${r.played}</td>
         <td>${r.wins}</td>
         <td>${r.draws}</td>
@@ -776,17 +595,9 @@ async function loadStandings() {
 
 // ─── PLAYERS ──────────────────────────────────────────────────────
 const HE_POS = { G: 'שוער', D: 'הגנה', M: 'קישור', F: 'התקפה' };
-const HE_POS_DETAIL = {
-  GK: 'שוער', ST: 'חלוץ', SS: 'חלוץ שני',
-  RW: 'חלוץ ימין', LW: 'חלוץ שמאל',
-  MC: 'קשר מרכזי', ML: 'קשר שמאלי', MR: 'קשר ימני',
-  AM: 'קשר התקפי', DM: 'קשר הגנתי',
-  DC: 'מגן מרכזי', DL: 'מגן שמאל', DR: 'מגן ימין',
-  WL: 'אגף שמאל', WR: 'אגף ימין',
-};
 
 function heRole(p) {
-  return HE_POS_DETAIL[p.positionDetail] || HE_POS[p.position] || p.position;
+  return p.positionName || HE_POS[p.position] || p.position;
 }
 
 function tt(icon, label, val) {
@@ -796,22 +607,20 @@ function tt(icon, label, val) {
 function playerCardStats(p) {
   const v = x => (x ?? 0);
   if (p.position === 'G')
-    return tt('🧤','שמירות',v(p.saves)) + tt('🔒','נקיות',v(p.cleanSheet));
+    return tt('🧤','הצלות',v(p.saves)) + tt('🔒','רשת נקייה',v(p.cleanSheet));
   if (p.position === 'D')
-    return tt('🛡','בלימות',v(p.tackles)) + tt('✂️','חטיפות',v(p.interceptions));
-  if (p.position === 'F')
-    return tt('⚽','גולים',v(p.goals)) + tt('🎯','בישולים',v(p.assists)) + tt('👟','בעיטות',v(p.totalShots));
-  return tt('⚽','גולים',v(p.goals)) + tt('🎯','בישולים',v(p.assists)) + tt('🔑','מסירות מפתח',v(p.keyPasses));
+    return tt('👕','הופעות',v(p.appearances)) + tt('⚽','גולים',v(p.goals)) + tt('🎯','בישולים',v(p.assists));
+  return tt('⚽','גולים',v(p.goals)) + tt('🎯','בישולים',v(p.assists)) + tt('👟','בעיטות',v(p.totalShots));
 }
 
 function renderPlayerCard(p) {
-  const name   = HE_PLAYERS[p.name] || p.name.split(' ').slice(-1)[0];
+  const name   = p.shortName || p.name;
   const rating = p.rating ? `<div class="player-rating">⭐ ${p.rating}</div>` : '';
   const num    = p.shirtNumber ? `<div class="player-number">#${p.shirtNumber}</div>` : '';
   return `<div class="player-card" onclick="openPlayerModal(${p.id})">
     <img class="player-photo-card"
-         src="https://img.sofascore.com/api/v1/player/${p.id}/image"
-         alt="${name}" onerror="this.style.display='none'">
+         src="${p.photo || ''}"
+         alt="${esc(name)}" onerror="this.style.display='none'">
     ${num}
     <div class="player-name-card">${name}</div>
     <div class="player-pos-badge">${heRole(p)}</div>
@@ -838,47 +647,27 @@ function filterPlayers(pos) {
 function openPlayerModal(id) {
   const p = (window._players || []).find(x => x.id === id);
   if (!p) return;
-  const name = HE_PLAYERS[p.name] || p.name;
-  const v    = x => (x ?? 0);
+  const name = p.name;
 
-  let statsRows;
-  if (p.position === 'G') {
-    statsRows = [
-      { val: v(p.appearances),  lbl: 'הופעות' },
-      { val: v(p.minutesPlayed),lbl: 'דקות' },
-      { val: v(p.saves),        lbl: 'שמירות' },
-      { val: v(p.cleanSheet),   lbl: 'נקיות' },
-      { val: v(p.goalsConceded),lbl: 'ספיגות' },
-      { val: v(p.yellowCards),  lbl: '🟨' },
-    ];
-  } else if (p.position === 'D') {
-    statsRows = [
-      { val: v(p.appearances),   lbl: 'הופעות' },
-      { val: v(p.minutesPlayed), lbl: 'דקות' },
-      { val: v(p.tackles),       lbl: 'בלימות' },
-      { val: v(p.interceptions), lbl: 'חטיפות' },
-      { val: v(p.goals),         lbl: 'גולים' },
-      { val: v(p.yellowCards),   lbl: '🟨' },
-    ];
-  } else if (p.position === 'F') {
-    statsRows = [
-      { val: v(p.appearances),   lbl: 'הופעות' },
-      { val: v(p.minutesPlayed), lbl: 'דקות' },
-      { val: v(p.goals),         lbl: 'גולים' },
-      { val: v(p.assists),       lbl: 'בישולים' },
-      { val: v(p.totalShots),    lbl: 'בעיטות' },
-      { val: v(p.shotsOnTarget), lbl: 'על השער' },
-    ];
-  } else {
-    statsRows = [
-      { val: v(p.appearances),        lbl: 'הופעות' },
-      { val: v(p.minutesPlayed),      lbl: 'דקות' },
-      { val: v(p.goals),              lbl: 'גולים' },
-      { val: v(p.assists),            lbl: 'בישולים' },
-      { val: v(p.keyPasses),          lbl: 'מסירות מפתח' },
-      { val: v(p.tackles),            lbl: 'בלימות' },
-    ];
-  }
+  // Only stats the data source actually provides (null = not available)
+  const statsRows = (p.position === 'G'
+    ? [
+        { val: p.appearances,   lbl: 'הופעות' },
+        { val: p.saves,         lbl: 'הצלות' },
+        { val: p.cleanSheet,    lbl: 'רשת נקייה' },
+        { val: p.goalsConceded, lbl: 'ספיגות' },
+      ]
+    : [
+        { val: p.appearances,   lbl: 'הופעות' },
+        { val: p.minutesPlayed, lbl: 'דקות' },
+        { val: p.goals,         lbl: 'גולים' },
+        { val: p.assists,       lbl: 'בישולים' },
+        { val: p.totalShots,    lbl: 'בעיטות' },
+        { val: p.shotsOnTarget, lbl: 'למסגרת' },
+        { val: p.yellowCards,   lbl: '🟨' },
+        { val: p.redCards,      lbl: '🟥' },
+      ]
+  ).filter(s => s.val != null);
 
   const statsHtml = statsRows.map(s =>
     `<div class="modal-stat"><strong>${s.val}</strong><span>${s.lbl}</span></div>`
@@ -890,8 +679,8 @@ function openPlayerModal(id) {
   document.getElementById('player-modal-content').innerHTML = `
     <div class="modal-hero">
       <img class="modal-photo"
-           src="https://img.sofascore.com/api/v1/player/${p.id}/image"
-           alt="${name}" onerror="this.src=''; this.classList.add('hidden')">
+           src="${p.photo || ''}"
+           alt="${esc(name)}" onerror="this.src=''; this.classList.add('hidden')">
       ${numBadge}
     </div>
     <div class="modal-body">
@@ -900,7 +689,7 @@ function openPlayerModal(id) {
       <div class="modal-rating-row">
         <div class="modal-rating-box">
           <span class="modal-rating-val">${ratingVal}</span>
-          <span class="modal-rating-lbl">דירוג</span>
+          <span class="modal-rating-lbl">דירוג ליגה</span>
         </div>
       </div>
       <div class="modal-stats">${statsHtml}</div>
@@ -928,7 +717,15 @@ async function loadPlayers() {
   }
 }
 
+async function loadSeason() {
+  try {
+    const { label } = await fetch('/api/season').then(r => r.json());
+    if (label) document.querySelectorAll('.season-label').forEach(el => { el.textContent = label; });
+  } catch {}
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  loadSeason();
   loadUpcoming();
   loadStandings();
   loadPlayers();
@@ -948,14 +745,14 @@ document.addEventListener('click', e => {
   e.stopPropagation();
   const rect      = label.getBoundingClientRect();
   const name      = label.dataset.subin;
-  const id        = label.dataset.subinid;
+  const photo     = label.dataset.subinphoto;
   const goals     = parseInt(label.dataset.subingoals || '0', 10);
   const goalBadge = goals > 0
     ? `<span class="sub-pop-goal">${goals > 1 ? `⚽×${goals}` : '⚽'}</span>`
     : '';
-  const photoHtml = id
+  const photoHtml = photo
     ? `<div class="sub-pop-photo-wrap">
-         <img class="sub-pop-photo" src="https://img.sofascore.com/api/v1/player/${id}/image"
+         <img class="sub-pop-photo" src="${esc(photo)}"
               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
          <div class="sub-pop-fallback">${name.charAt(0)}</div>
        </div>`

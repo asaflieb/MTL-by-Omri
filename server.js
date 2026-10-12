@@ -178,7 +178,7 @@ app.get('/api/squad', async (req, res) => {
         photo:         athleteImage(a.id),
         position:      POSITION_LETTER[a.position.id],
         positionName:  a.formationPosition?.name || a.position?.name || null,
-        shirtNumber:   a.jerseyNum ?? null,
+        shirtNumber:   a.jerseyNum > 0 ? a.jerseyNum : null,
         rating:        stats.rating ?? null,
         appearances:   stats.appearances   ?? 0,
         minutesPlayed: stats.minutesPlayed ?? null,
@@ -253,7 +253,7 @@ function lineupTeam(competitor, membersById, subsOff) {
         photo:    mem.athleteId ? athleteImage(mem.athleteId) : null,
         rating:   m.ranking > 0 ? m.ranking : null,
         position: POSITION_LETTER[m.position?.id] || null,
-        number:   mem.jerseyNumber ?? null,
+        number:   mem.jerseyNumber > 0 ? mem.jerseyNumber : null,
         subOff:   subsOff[m.id] || null,
       };
     }),
@@ -295,12 +295,13 @@ app.get('/api/match/:id/details', async (req, res) => {
         const inId  = e.playerId;
         const outId = e.extraPlayers?.[0];
         if (outId) {
+          const inAthleteId = membersById[inId]?.athleteId;
           subsOff[outId] = {
             time:        e.gameTime,
             addedTime:   e.addedTime || 0,
             subInName:   nameOf(inId),
             subInNameHe: nameOf(inId),
-            subInId:     membersById[inId]?.athleteId ?? null,
+            subInPhoto:  inAthleteId ? athleteImage(inAthleteId) : null,
           };
         }
         events.push({
