@@ -670,7 +670,18 @@ function renderPlayerCard(p) {
   </div>`;
 }
 
+// "All" tab starts collapsed to ~3 rows of top-rated players (the full squad is ~4 screens on a phone)
+let playersPos      = 'all';
+let playersExpanded = false;
+const COLLAPSED_ROWS = 3;
+
+function gridColumns(grid) {
+  return getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length || 1;
+}
+
 function filterPlayers(pos) {
+  if (pos !== playersPos) playersExpanded = false;
+  playersPos = pos;
   document.querySelectorAll('.player-tab').forEach(btn =>
     btn.classList.toggle('active', btn.dataset.pos === pos)
   );
@@ -678,12 +689,42 @@ function filterPlayers(pos) {
   if (!grid || !window._players) return;
   const filtered = pos === 'all' ? window._players : window._players.filter(p => p.position === pos);
   const POS_ORDER = { G: 0, D: 1, M: 2, F: 3 };
-  const sorted = [...filtered].sort((a, b) =>
+  const byPosition = [...filtered].sort((a, b) =>
     (POS_ORDER[a.position] ?? 9) - (POS_ORDER[b.position] ?? 9) ||
     (b.rating ?? 0) - (a.rating ?? 0)
   );
-  grid.innerHTML = sorted.map(renderPlayerCard).join('');
+
+  // Collapse only the "all" tab, and only when it hides at least a full row
+  const cols  = gridColumns(grid);
+  const limit = cols * COLLAPSED_ROWS;
+  const collapsible = pos === 'all' && filtered.length - limit >= cols;
+  const collapsed   = collapsible && !playersExpanded;
+
+  const shown = collapsed
+    ? [...filtered].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, limit)
+    : byPosition;
+  grid.innerHTML = shown.map(renderPlayerCard).join('');
+
+  setHtml('players-note', collapsed ? '⭐ הבולטים העונה לפי דירוג' : '');
+  setHtml('players-more', !collapsible ? '' : collapsed
+    ? `<button class="players-more-btn" onclick="togglePlayersExpanded()">הצג את כל הסגל (${filtered.length}) ▼</button>`
+    : `<button class="players-more-btn" onclick="togglePlayersExpanded()">הצג פחות ▲</button>`);
 }
+
+function togglePlayersExpanded() {
+  playersExpanded = !playersExpanded;
+  filterPlayers(playersPos);
+  // After collapsing, the button jumps up — bring the section back into view
+  if (!playersExpanded) document.getElementById('players-section')?.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Column count changes with width (e.g. rotating a phone) — re-apply the collapse limit
+let lastPlayersWidth = window.innerWidth;
+window.addEventListener('resize', () => {
+  if (window.innerWidth === lastPlayersWidth || !window._players) return;
+  lastPlayersWidth = window.innerWidth;
+  filterPlayers(playersPos);
+});
 
 function openPlayerModal(id) {
   const p = (window._players || []).find(x => x.id === id);

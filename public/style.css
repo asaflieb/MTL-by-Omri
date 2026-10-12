@@ -1163,6 +1163,30 @@ body {
   gap: 16px;
 }
 
+.players-note:not(:empty) {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray);
+  margin-bottom: 12px;
+}
+
+.players-more { text-align: center; }
+.players-more-btn {
+  margin-top: 20px;
+  min-height: 44px;
+  padding: 0 24px;
+  border-radius: 22px;
+  border: 1.5px solid var(--blue);
+  background: var(--white);
+  color: var(--blue);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.players-more-btn:hover { background: var(--blue); color: var(--white); }
+
 .player-card {
   background: var(--white);
   border-radius: 14px;
