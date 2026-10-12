@@ -771,7 +771,41 @@ async function loadSeason() {
   }
 }
 
+// ─── QUICK NAV: highlight the section currently under the sticky bar ─
+function initQuickNav() {
+  const nav   = document.querySelector('.quick-nav');
+  const inner = document.querySelector('.quick-nav-inner');
+  const links = [...document.querySelectorAll('.quick-nav-link')];
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  if (!nav || !links.length) return;
+
+  let current = null;
+  function update() {
+    const line = nav.getBoundingClientRect().bottom + 16;
+    let idx = -1;
+    sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= line) idx = i; });
+    // At the very bottom the last section may be too short to reach the line
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) idx = links.length - 1;
+    const active = links[idx] || null;
+    if (active === current) return;
+    current?.classList.remove('active');
+    active?.classList.add('active');
+    current = active;
+    // Keep the active chip visible when the bar scrolls sideways (mobile).
+    // scrollBy on the bar only — never scrollIntoView, which would interrupt the page's smooth scroll.
+    if (active) {
+      const a = active.getBoundingClientRect(), box = inner.getBoundingClientRect();
+      if (a.left < box.left)   inner.scrollBy({ left: a.left - box.left - 12, behavior: 'smooth' });
+      if (a.right > box.right) inner.scrollBy({ left: a.right - box.right + 12, behavior: 'smooth' });
+    }
+  }
+
+  window.addEventListener('scroll', update, { passive: true }); // cheap: a handful of rect reads
+  update();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  initQuickNav();
   loadSeason();
   loadUpcoming();
   loadStandings();

@@ -26,6 +26,54 @@ body {
   overflow-x: hidden;
 }
 
+/* ===== QUICK NAV (sticky) ===== */
+.quick-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(10, 22, 40, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 2px solid var(--yellow);
+}
+
+.quick-nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 8px 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.quick-nav-inner::-webkit-scrollbar { display: none; }
+
+.quick-nav-link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+.quick-nav-link:hover  { background: rgba(255, 255, 255, 0.1); }
+.quick-nav-link.active { background: var(--yellow); color: var(--blue-deep); }
+.qn-icon { margin-left: 6px; }
+
+@media (max-width: 600px) {
+  /* Chips scroll sideways instead of squeezing */
+  .quick-nav-inner { justify-content: space-between; gap: 2px; padding: 8px 8px; }
+  .quick-nav-link  { padding: 0 8px; font-size: 14px; }
+  .qn-icon         { display: none; } /* text alone fits all five chips on a phone */
+}
+
 /* ===== HERO ===== */
 .hero {
   position: relative;
