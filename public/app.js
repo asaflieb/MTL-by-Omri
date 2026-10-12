@@ -580,12 +580,11 @@ async function loadStandings() {
     const rows = await getJson('/api/standings');
     body.innerHTML = rows.map(r => {
       const isMaccabi = r.teamName === MACCABI;
-      const logo = `<img src="${r.teamLogo}" alt=""
-        class="team-logo" style="width:20px;height:20px;vertical-align:middle;margin-left:6px"
-        onerror="this.style.display='none'">`;
+      const logo = `<img src="${r.teamLogo}" alt="" class="standings-logo"
+        onerror="this.style.visibility='hidden'">`;
       return `<tr class="${isMaccabi ? 'standings-maccabi' : ''}">
         <td><span class="rank">${r.position}</span></td>
-        <td class="player-cell">${logo}${r.teamName}</td>
+        <td><div class="standings-team">${logo}<span>${r.teamName}</span></div></td>
         <td>${r.played}</td>
         <td>${r.wins}</td>
         <td>${r.draws}</td>

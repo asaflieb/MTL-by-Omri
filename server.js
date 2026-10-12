@@ -248,8 +248,8 @@ function lineupTeam(competitor, membersById, subsOff) {
       const mem = membersById[m.id] || {};
       return {
         id:       mem.athleteId ?? m.id,
-        name:     mem.name || '?',
-        nameHe:   mem.name || null,
+        name:     mem.name || '?',               // full name — used to match goals/subs
+        nameHe:   mem.shortName || mem.name || null, // short display name for the pitch
         photo:    mem.athleteId ? athleteImage(mem.athleteId) : null,
         rating:   m.ranking > 0 ? m.ranking : null,
         position: POSITION_LETTER[m.position?.id] || null,
