@@ -444,7 +444,7 @@ body {
   justify-content: center;
   transition: background 0.2s, transform 0.15s;
   box-shadow: 0 2px 12px rgba(0,63,165,0.25);
-  padding-bottom: 2px;
+  padding: 0;
 }
 
 .car-btn:hover:not(:disabled) {

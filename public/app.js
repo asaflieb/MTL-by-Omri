@@ -194,15 +194,22 @@ function renderCarousel(events) {
     if (viewport) bindCarouselSwipe(viewport);
   }, 0);
 
+  // SVG chevrons: text arrows (‹ ›) get mirrored by the browser in RTL and ended up pointing inward
+  const chevron = side => `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+    <polyline points="${side === 'right' ? '9 5 16 12 9 19' : '15 5 8 12 15 19'}"
+      fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+
+  // RTL: "prev" sits on the right and points right, "next" sits on the left and points left
   return `
     <div class="carousel-wrap">
-      <button class="car-btn" id="car-prev" onclick="carouselNav('prev')" disabled>›</button>
+      <button class="car-btn" id="car-prev" onclick="carouselNav('prev')" aria-label="המשחק הקודם" disabled>${chevron('right')}</button>
       <div class="carousel-viewport">
         <div class="carousel-track" id="carousel-track">
           ${events.map(renderGameCard).join('')}
         </div>
       </div>
-      <button class="car-btn" id="car-next" onclick="carouselNav('next')">‹</button>
+      <button class="car-btn" id="car-next" onclick="carouselNav('next')" aria-label="המשחק הבא">${chevron('left')}</button>
     </div>`;
 }
 
