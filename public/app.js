@@ -464,14 +464,16 @@ function renderTimeline(events, homeTeam, awayTeam) {
   </div>`;
 }
 
-function playerDot(p, isMaccabi, isMotm, goalCount) {
+function playerDot(p, isMaccabi, isMotm, goalCount, subInGoalCount = 0) {
   const name     = shortName(p.name, p.nameHe);
   const photoUrl = `https://img.sofascore.com/api/v1/player/${p.id}/image`;
   const isGK     = p.position === 'G';
   const subInDisplay = p.subOff?.subInNameHe || HE_PLAYERS[p.subOff?.subInName] || p.subOff?.subInName || null;
-  const subInAttr = subInDisplay ? ` data-subin="${subInDisplay}"` : '';
+  const subInAttr    = subInDisplay ? ` data-subin="${subInDisplay}"` : '';
+  const subInIdAttr  = p.subOff?.subInId ? ` data-subinid="${p.subOff.subInId}"` : '';
+  const subInGoalAttr = subInGoalCount > 0 ? ` data-subingoals="${subInGoalCount}"` : '';
   const sub      = p.subOff
-    ? `<span class="sub-off-label"${subInAttr}>⬇ ${p.subOff.time}${p.subOff.addedTime ? '+' + p.subOff.addedTime : ''}′</span>`
+    ? `<span class="sub-off-label"${subInAttr}${subInIdAttr}${subInGoalAttr}>⬇ ${p.subOff.time}${p.subOff.addedTime ? '+' + p.subOff.addedTime : ''}′</span>`
     : '';
   const goalBadge = goalCount > 0
     ? `<span class="player-goal-badge">${goalCount > 1 ? `⚽×${goalCount}` : '⚽'}</span>`
@@ -550,7 +552,7 @@ function renderPitch(home, away, homeTeam, awayTeam, events) {
     const ordered = isHome ? [...[...rows].reverse(), gk] : [gk, ...rows];
     return ordered.map(row =>
       `<div class="pitch-row">${row.map(p =>
-        playerDot(p, isMaccabi, motmSet.has(p.id), goalCounts[p.name] || 0)
+        playerDot(p, isMaccabi, motmSet.has(p.id), goalCounts[p.name] || 0, goalCounts[p.subOff?.subInName] || 0)
       ).join('')}</div>`
     ).join('');
   };
@@ -944,11 +946,31 @@ document.addEventListener('click', e => {
   const label = e.target.closest('.sub-off-label[data-subin]');
   if (!label) return;
   e.stopPropagation();
-  const rect = label.getBoundingClientRect();
-  const pop  = document.createElement('div');
-  pop.className   = 'sub-popover';
-  pop.textContent = `⬆ ${label.dataset.subin}`;
-  pop.style.top   = `${rect.bottom + 4}px`;
-  pop.style.left  = `${rect.left + rect.width / 2}px`;
+  const rect      = label.getBoundingClientRect();
+  const name      = label.dataset.subin;
+  const id        = label.dataset.subinid;
+  const goals     = parseInt(label.dataset.subingoals || '0', 10);
+  const goalBadge = goals > 0
+    ? `<span class="sub-pop-goal">${goals > 1 ? `⚽×${goals}` : '⚽'}</span>`
+    : '';
+  const photoHtml = id
+    ? `<div class="sub-pop-photo-wrap">
+         <img class="sub-pop-photo" src="https://img.sofascore.com/api/v1/player/${id}/image"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+         <div class="sub-pop-fallback">${name.charAt(0)}</div>
+       </div>`
+    : '';
+  const pop = document.createElement('div');
+  pop.className = 'sub-popover';
+  pop.innerHTML = `
+    <div class="sub-pop-inner">
+      ${photoHtml}
+      <div class="sub-pop-info">
+        <div class="sub-pop-label">⬆ מחליף</div>
+        <div class="sub-pop-name">${name}${goalBadge}</div>
+      </div>
+    </div>`;
+  pop.style.top  = `${rect.bottom + 6}px`;
+  pop.style.left = `${rect.left + rect.width / 2}px`;
   document.body.appendChild(pop);
 });

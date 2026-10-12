@@ -998,17 +998,82 @@ body {
 .sub-popover {
   position: fixed;
   transform: translateX(-50%);
-  background: rgba(20,20,30,0.97);
-  border: 1px solid rgba(100,220,130,0.45);
-  color: #6ddc82;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 4px 9px;
-  border-radius: 6px;
+  background: rgba(12, 18, 32, 0.97);
+  border: 1px solid rgba(100, 220, 130, 0.4);
+  border-radius: 10px;
   pointer-events: none;
-  white-space: nowrap;
   z-index: 9999;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.75);
+  min-width: 110px;
+}
+
+.sub-pop-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.sub-pop-photo-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(100, 220, 130, 0.6);
+  background: rgba(50, 55, 75, 0.9);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sub-pop-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sub-pop-fallback {
+  display: none;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: rgba(100, 220, 130, 0.9);
+}
+
+.sub-pop-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sub-pop-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(100, 220, 130, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sub-pop-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sub-pop-goal {
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 1px 4px;
 }
 
 .no-lineup {

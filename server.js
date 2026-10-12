@@ -364,6 +364,7 @@ app.get('/api/match/:id/details', async (req, res) => {
           addedTime:   i.addedTime || 0,
           subInName:   i.playerIn?.name || null,
           subInNameHe: i.playerIn?.id ? (playerHeMap[i.playerIn.id] || null) : null,
+          subInId:     i.playerIn?.id  || null,
         };
         if (i.playerOut?.id) subsOff[i.playerOut.id] = subData;
         events.push({
