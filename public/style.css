@@ -371,7 +371,9 @@ body {
 }
 
 .team-logo.hidden,
-.team-logo-lg.hidden { display: none; }
+.team-logo-lg.hidden,
+.season-badge.hidden,
+.badge.hidden { display: none; }
 
 /* ===== LOADING / ERROR ===== */
 .loading-msg,

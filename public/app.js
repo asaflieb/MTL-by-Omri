@@ -10,6 +10,13 @@ function esc(s) {
     .replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// Fetch JSON from our API; a non-2xx response throws so callers show their error state
+async function getJson(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`${url} → ${r.status}`);
+  return r.json();
+}
+
 function formatDate(dateStr, timeStr) {
   const d = new Date(dateStr + 'T00:00:00');
   const day   = HE_DAYS[d.getDay()];
@@ -85,7 +92,7 @@ async function toggleUpcomingLineup(btn) {
   el.innerHTML = '<div class="loading-msg-dark" style="text-align:center;padding:20px">⏳ טוען הרכבים…</div>';
 
   try {
-    const data = await fetch(`/api/match/${eventId}/lineups-only`).then(r => r.json());
+    const data = await getJson(`/api/match/${eventId}/lineups-only`);
     if (!data.available) {
       el.innerHTML = '<div class="lineup-unavailable">ההרכב טרם פורסם</div>';
     } else {
@@ -405,7 +412,7 @@ async function toggleMatchDetails(eventId, cardEl) {
     detailsEl.innerHTML = '<div class="loading-msg-dark" style="text-align:center;padding:16px">⏳ טוען הרכבים...</div>';
     detailsEl.classList.add('open');
     try {
-      const data = await fetch(`/api/match/${eventId}/details`).then(r => r.json());
+      const data = await getJson(`/api/match/${eventId}/details`);
       const homeTeam = cardEl.dataset.home;
       const awayTeam = cardEl.dataset.away;
       const motmHtml     = renderMotmBanner(data.home, data.away);
@@ -476,8 +483,7 @@ async function loadUpcoming() {
   loading('upcoming-featured');
   setHtml('upcoming-grid', '');
   try {
-    const res    = await fetch('/api/upcoming');
-    const events = await res.json();
+    const events = await getJson('/api/upcoming');
 
     if (!Array.isArray(events) || events.length === 0) {
       setHtml('upcoming-featured', '<div class="no-data-msg">אין משחקים קרובים</div>');
@@ -495,8 +501,7 @@ async function loadUpcoming() {
 async function loadResults() {
   loading('results-list', true);
   try {
-    const res    = await fetch('/api/results-all');
-    const events = await res.json();
+    const events = await getJson('/api/results-all');
 
     if (!Array.isArray(events) || events.length === 0) {
       setHtml('results-list', '<div class="no-data-msg-dark">אין תוצאות</div>');
@@ -548,8 +553,7 @@ function playerRow(player, rank, statKey, statLabel) {
 
 async function loadStats() {
   try {
-    const res     = await fetch('/api/squad');
-    const players = await res.json();
+    const players = await getJson('/api/squad');
 
     const scorers  = [...players].filter(p => p.goals > 0)
                                  .sort((a, b) => b.goals   - a.goals)
@@ -564,6 +568,8 @@ async function loadStats() {
     if (ab) ab.innerHTML  = assisters.map((p, i) => playerRow(p, i + 1, 'assists', 'בישולים')).join('');
   } catch (e) {
     console.error('stats error:', e);
+    const err = '<tr><td colspan="3" style="text-align:center;padding:12px;color:#c00">⚠️ שגיאה בטעינת הנתונים</td></tr>';
+    for (const id of ['scorers-body', 'assisters-body']) setHtml(id, err);
   }
 }
 
@@ -571,7 +577,7 @@ async function loadStandings() {
   const body = document.getElementById('standings-body');
   if (!body) return;
   try {
-    const rows = await fetch('/api/standings').then(r => r.json());
+    const rows = await getJson('/api/standings');
     body.innerHTML = rows.map(r => {
       const isMaccabi = r.teamName === MACCABI;
       const logo = `<img src="${r.teamLogo}" alt=""
@@ -704,7 +710,7 @@ function closePlayerModal() {
 
 async function loadPlayers() {
   try {
-    const data = await fetch('/api/squad').then(r => r.json());
+    const data = await getJson('/api/squad');
     window._players = data;
     filterPlayers('all');
     document.getElementById('player-tabs')?.addEventListener('click', e => {
@@ -719,9 +725,15 @@ async function loadPlayers() {
 
 async function loadSeason() {
   try {
-    const { label } = await fetch('/api/season').then(r => r.json());
-    if (label) document.querySelectorAll('.season-label').forEach(el => { el.textContent = label; });
-  } catch {}
+    const { label } = await getJson('/api/season');
+    if (!label) throw new Error('no season label');
+    document.querySelectorAll('.season-label').forEach(el => { el.textContent = label; });
+  } catch {
+    // Without a label, "עונה" alone looks broken — hide the badges instead
+    document.querySelectorAll('.season-label').forEach(el => {
+      el.closest('.season-badge, .badge')?.classList.add('hidden');
+    });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
