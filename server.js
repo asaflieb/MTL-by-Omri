@@ -1,255 +1,198 @@
 const express = require('express');
 const path    = require('path');
+const { get365, TTL, MACCABI_ID, LEAGUE_ID, athleteImage, competitorImage } = require('./lib/s365');
 
 const app  = express();
 const PORT = 3000;
 
-const SOFASCORE  = 'https://api.sofascore.com/api/v1';
-const SC_HEADERS = { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36' };
+// ─── Helpers ──────────────────────────────────────────────────────
 
-const MACCABI_SC_ID = 5198;
-const SEASON_START  = '2025-08-01';
-
-let cachedTournamentId = null;
-let cachedSeasonId     = null;
-
-async function resolveSofascoreIds() {
-  if (cachedTournamentId && cachedSeasonId) return { tid: cachedTournamentId, sid: cachedSeasonId };
-  const r = await fetch(`${SOFASCORE}/team/${MACCABI_SC_ID}/events/last/0`, { headers: SC_HEADERS });
-  const d = await r.json();
-  // Filter specifically for Israeli Premier League (tid 266), not Cup/Europe
-  const ev = d.events?.find(e => e.tournament?.uniqueTournament?.id === 266);
-  if (!ev) throw new Error('No Premier League events found');
-  cachedTournamentId = ev.tournament.uniqueTournament.id;
-  cachedSeasonId     = ev.season?.id;
-  return { tid: cachedTournamentId, sid: cachedSeasonId };
-}
-
-// ─── 365scores Hebrew name lookup ────────────────────────────────
-const SCORES365  = 'https://webws.365scores.com/web';
-const S365_HEADS = { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36' };
-
-// Sofascore English team name → Hebrew (for matching against 365scores)
-const HE_TEAMS_MAP = {
-  'Maccabi Tel Aviv':              'מכבי תל אביב',
-  'Hapoel Beer Sheva':             'הפועל באר שבע',
-  "Hapoel Be'er Sheva":            'הפועל באר שבע',
-  'Maccabi Haifa':                 'מכבי חיפה',
-  'Beitar Jerusalem':              'ביתר ירושלים',
-  'Hapoel Tel Aviv':               'הפועל תל אביב',
-  'Hapoel Tel-Aviv':               'הפועל תל אביב',
-  'Hapoel Haifa':                  'הפועל חיפה',
-  'Hapoel Petah Tikva':            'הפועל פתח תקווה',
-  'Hapoel Petach Tikva':           'הפועל פתח תקווה',
-  'Maccabi Petah Tikva':           'מכבי פתח תקווה',
-  'Maccabi Petach Tikva':          'מכבי פתח תקווה',
-  'Bnei Sakhnin':                  'בני סכנין',
-  'Bnei Yehuda':                   'בני יהודה',
-  'Ashdod FC':                     'אשדוד',
-  'FC Ashdod':                     'אשדוד',
-  'Ashdod SC':                     'אשדוד',
-  'Hapoel Hadera':                 'הפועל חדרה',
-  'Ironi Kiryat Shmona':           'קרית שמונה',
-  'Hapoel Ironi Kiryat Shmona':    'קרית שמונה',
-  'Maccabi Netanya':               'מכבי נתניה',
-  'Hapoel Jerusalem':              'הפועל ירושלים',
-  'Ironi Tiberias':                'טבריה',
-  'Ironi Dorot Tiberias':          'טבריה',
-  'Maccabi Bney Reine':            'מכבי בני ריינה',
-  'Maccabi Yafo':                  'מכבי יפו',
-  'Hapoel Rishon Lezion':          'ראשון לציון',
-};
-
-function normTeam(s) {
-  return (s || '').replace(/[."'"״\s-]/g, '');
-}
-
-function teamMatch(name365, heKey) {
-  const a = normTeam(name365);
-  const b = normTeam(heKey);
-  if (!b || b.length < 3) return false;
-  return a.includes(b) || b.includes(a);
-}
-
-// Returns { nameMap, ratingMap } — both keyed by 'side-jerseyNumber'
-async function get365Data(startTimestamp, homeEn, awayEn) {
-  try {
-    const homeHe = HE_TEAMS_MAP[homeEn];
-    const awayHe = HE_TEAMS_MAP[awayEn];
-    if (!homeHe || !awayHe) return null;
-
-    const d  = new Date(startTimestamp * 1000);
-    const dd = String(d.getUTCDate()).padStart(2, '0');
-    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-    const dateStr = `${dd}/${mm}/${d.getUTCFullYear()}`;
-
-    const r = await fetch(
-      `${SCORES365}/games/?appTypeId=5&langId=2&startDate=${dateStr}&endDate=${dateStr}&sports=1`,
-      { headers: S365_HEADS }
-    );
-    const gamesData = await r.json();
-
-    const game365 = (gamesData.games || []).find(g => {
-      const h = g.homeCompetitor?.name || '';
-      const a = g.awayCompetitor?.name || '';
-      return (teamMatch(h, homeHe) && teamMatch(a, awayHe)) ||
-             (teamMatch(h, awayHe) && teamMatch(a, homeHe));
-    });
-    if (!game365) return null;
-
-    const gr = await fetch(
-      `${SCORES365}/game/?appTypeId=5&langId=2&gameId=${game365.id}`,
-      { headers: S365_HEADS }
-    );
-    const gameData = await gr.json();
-    const gGame   = gameData.game;
-    const members = gGame?.members || [];
-
-    const swapped = !teamMatch(game365.homeCompetitor?.name || '', homeHe);
-    const homeId  = game365.homeCompetitor?.id;
-    const byId    = Object.fromEntries(members.map(m => [m.id, m]));
-
-    const nameMap   = {};
-    const ratingMap = {};
-
-    for (const m of members) {
-      if (m.jerseyNumber == null || m.jerseyNumber < 0) continue;
-      const isHome365 = m.competitorId === homeId;
-      const side = swapped ? (isHome365 ? 'away' : 'home') : (isHome365 ? 'home' : 'away');
-      nameMap[`${side}-${m.jerseyNumber}`] = m.name;
-    }
-
-    for (const [lineSide, lineArr] of [
-      [swapped ? 'away' : 'home', gGame?.homeCompetitor?.lineups?.members || []],
-      [swapped ? 'home' : 'away', gGame?.awayCompetitor?.lineups?.members || []],
-    ]) {
-      for (const lm of lineArr) {
-        if (lm.status !== 1 || !(lm.ranking > 0)) continue;
-        const mem = byId[lm.id];
-        if (!mem || mem.jerseyNumber == null || mem.jerseyNumber < 0) continue;
-        ratingMap[`${lineSide}-${mem.jerseyNumber}`] = lm.ranking;
-      }
-    }
-
-    return { nameMap, ratingMap };
-  } catch {
-    return null;
-  }
-}
-
-// ─── Sofascore event → frontend shape ────────────────────────────
-function scToGame(ev) {
-  const ts     = ev.startTimestamp * 1000;
-  const d      = new Date(ts);
-  const month  = d.getUTCMonth();
-  const offset = (month >= 2 && month <= 9) ? 3 : 2;
-  const local  = new Date(ts + offset * 3600 * 1000);
-  const pad    = n => String(n).padStart(2, '0');
+// Israel-local date ('YYYY-MM-DD') and time ('HH:MM:00') for an ISO timestamp
+const IL_FMT = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Jerusalem',
+  year: 'numeric', month: '2-digit', day: '2-digit',
+  hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+});
+function israelDateTime(iso) {
+  const parts = Object.fromEntries(IL_FMT.formatToParts(new Date(iso)).map(p => [p.type, p.value]));
   return {
-    idEvent:          String(ev.id),
-    strHomeTeam:      ev.homeTeam.name,
-    strAwayTeam:      ev.awayTeam.name,
-    strHomeTeamBadge: `https://img.sofascore.com/api/v1/team/${ev.homeTeam.id}/image`,
-    strAwayTeamBadge: `https://img.sofascore.com/api/v1/team/${ev.awayTeam.id}/image`,
-    dateEvent:        local.toISOString().slice(0, 10),
-    strTime:          `${pad(local.getUTCHours())}:${pad(local.getUTCMinutes())}:00`,
-    strVenue:         ev.venue?.name || null,
-    intHomeScore:     ev.homeScore?.current ?? null,
-    intAwayScore:     ev.awayScore?.current ?? null,
-    strStatus:        ev.status?.type || '',
-    strLeague:        ev.tournament?.name || '',
+    date: `${parts.year}-${parts.month}-${parts.day}`,
+    time: `${parts.hour}:${parts.minute}:00`,
   };
 }
 
+const FRIENDLY_COMPETITION_ID = 321;
+
+// competitionId → currentSeasonNum, collected from the `competitions` meta of games responses
+function seasonMap(...responses) {
+  const map = {};
+  for (const r of responses) for (const c of (r.competitions || [])) map[c.id] = c.currentSeasonNum;
+  return map;
+}
+
+function isFriendly(g, seasons) {
+  return g.competitionId === FRIENDLY_COMPETITION_ID || !(seasons[g.competitionId] > 0);
+}
+
+function isCurrentSeason(g, seasons) {
+  return !isFriendly(g, seasons) && g.seasonNum === seasons[g.competitionId];
+}
+
+const score = s => (s == null || s < 0 ? null : s);
+
+// 365scores game → frontend shape
+function toGame(g, venue = null) {
+  const { date, time } = israelDateTime(g.startTime);
+  return {
+    idEvent:          String(g.id),
+    strHomeTeam:      g.homeCompetitor.name,
+    strAwayTeam:      g.awayCompetitor.name,
+    strHomeTeamBadge: competitorImage(g.homeCompetitor.id),
+    strAwayTeamBadge: competitorImage(g.awayCompetitor.id),
+    dateEvent:        date,
+    strTime:          time,
+    strVenue:         venue,
+    intHomeScore:     score(g.homeCompetitor.score),
+    intAwayScore:     score(g.awayCompetitor.score),
+    strStatus:        g.statusText || '',
+    strLeague:        g.competitionDisplayName || '',
+  };
+}
+
+const getGame = (id, ttl) => get365('game', `gameId=${encodeURIComponent(id)}`, ttl).then(d => d.game);
+
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ─── Season label ─────────────────────────────────────────────────
+app.get('/api/season', async (req, res) => {
+  try {
+    const d    = await get365('standings', `competitions=${LEAGUE_ID}`);
+    const comp = d.competitions?.find(c => c.id === LEAGUE_ID);
+    const name = comp?.seasons?.find(s => s.num === comp.currentSeasonNum)?.name || '';
+    // '2026/2027' → '2026/27'
+    const label = name.replace(/^(\d{4})\/\d{2}(\d{2})$/, '$1/$2');
+    res.json({ label });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ─── Upcoming fixtures ────────────────────────────────────────────
 app.get('/api/upcoming', async (req, res) => {
   try {
-    const r = await fetch(`${SOFASCORE}/team/${MACCABI_SC_ID}/events/next/0`, { headers: SC_HEADERS });
-    const d = await r.json();
-    const games = (d.events || [])
-      .filter(ev => ev.status?.type !== 'finished')
-      .map(scToGame)
-      .sort((a, b) => new Date(a.dateEvent + 'T' + a.strTime) - new Date(b.dateEvent + 'T' + b.strTime));
-    res.json(games);
+    const d       = await get365('games/fixtures', `competitors=${MACCABI_ID}`, TTL.short);
+    const seasons = seasonMap(d);
+    const games   = (d.games || [])
+      .filter(g => g.statusGroup !== 4 && !isFriendly(g, seasons))
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+    // Venue is only available on the game endpoint — fetch it for the featured (first) game
+    const venue = games[0]
+      ? await getGame(games[0].id, TTL.medium).then(g => g?.venue?.name || null).catch(() => null)
+      : null;
+
+    res.json(games.map((g, i) => toGame(g, i === 0 ? venue : null)));
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// ─── Season results ───────────────────────────────────────────────
+// ─── Season results (all official competitions, no friendlies) ───
+const MAX_RESULT_PAGES = 8;
+
 app.get('/api/results-all', async (req, res) => {
   try {
-    const [p0, p1] = await Promise.all([
-      fetch(`${SOFASCORE}/team/${MACCABI_SC_ID}/events/last/0`, { headers: SC_HEADERS }).then(r => r.json()),
-      fetch(`${SOFASCORE}/team/${MACCABI_SC_ID}/events/last/1`, { headers: SC_HEADERS }).then(r => r.json()),
-    ]);
-    const games = [...(p0.events || []), ...(p1.events || [])]
-      .filter(ev =>
-        ev.status?.type === 'finished' &&
-        new Date(ev.startTimestamp * 1000).toISOString().slice(0, 10) >= SEASON_START
-      )
-      .map(scToGame)
-      .sort((a, b) => new Date(b.dateEvent) - new Date(a.dateEvent));
+    let page = await get365('games/results', `competitors=${MACCABI_ID}`);
+    const pages = [page];
+    // Pages go back in time; keep going while the page still has current-season games
+    while (pages.length < MAX_RESULT_PAGES && page.paging?.previousPage) {
+      const seasons = seasonMap(...pages);
+      if (!(page.games || []).some(g => isCurrentSeason(g, seasons))) break;
+      page = await get365(page.paging.previousPage);
+      if (!page.games?.length) break;
+      pages.push(page);
+    }
+
+    const seasons = seasonMap(...pages);
+    const byId    = new Map();
+    for (const p of pages) for (const g of (p.games || [])) byId.set(g.id, g);
+
+    const games = [...byId.values()]
+      .filter(g => g.statusGroup === 4 && isCurrentSeason(g, seasons))
+      .sort((a, b) => b.startTime.localeCompare(a.startTime))
+      .map(g => toGame(g));
     res.json(games);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// ─── Squad stats ──────────────────────────────────────────────────
+// ─── Squad + league season stats ─────────────────────────────────
+const POSITION_LETTER = { 1: 'G', 2: 'D', 3: 'M', 4: 'F' };
+
+// highlightStats type ids → our field names
+const STAT_TYPES = {
+  5:   'appearances',
+  1:   'goals',
+  2:   'assists',
+  54:  'rating',
+  3:   'yellowCards',
+  4:   'redCards',
+  223: 'totalShots',
+  35:  'shotsOnTarget',
+  222: 'minutesPlayed',
+  25:  'cleanSheet',
+  26:  'saves',
+  29:  'goalsConceded',
+};
+
+// '6/6' → 6, '8(3פנ׳)' → 8, '8.0' → 8, '-' → null
+function statNumber(v) {
+  const m = String(v ?? '').match(/^-?\d+(\.\d+)?/);
+  return m ? Number(m[0]) : null;
+}
+
 app.get('/api/squad', async (req, res) => {
   try {
-    const { tid, sid } = await resolveSofascoreIds();
-    const squadRes  = await fetch(`${SOFASCORE}/team/${MACCABI_SC_ID}/players`, { headers: SC_HEADERS });
-    const squadData = await squadRes.json();
-    const squad = squadData.players || [];
+    const sq       = await get365('squads', `competitors=${MACCABI_ID}`);
+    const athletes = (sq.squads?.[0]?.athletes || []).filter(a => POSITION_LETTER[a.position?.id]);
 
-    const players = await Promise.all(
-      squad.map(async ({ player: p }) => {
-        try {
-          const r = await fetch(
-            `${SOFASCORE}/player/${p.id}/unique-tournament/${tid}/season/${sid}/statistics/overall`,
-            { headers: SC_HEADERS }
-          );
-          const d = await r.json();
-          const s = d.statistics || {};
-          return {
-            id:           p.id,
-            name:         p.name,
-            position:     p.position,
-            positionDetail: (p.positionsDetailed?.[0]) ?? null,
-            shirtNumber:  p.shirtNumber ?? null,
-            rating:       s.rating      ? +s.rating.toFixed(2) : null,
-            appearances:  s.appearances  ?? 0,
-            minutesPlayed:s.minutesPlayed ?? 0,
-            goals:        s.goals         ?? 0,
-            assists:      s.assists       ?? 0,
-            apps:         s.appearances   ?? 0,
-            yellowCards:  s.yellowCards   ?? 0,
-            redCards:     s.redCards      ?? 0,
-            saves:        s.saves         ?? 0,
-            cleanSheet:   s.cleanSheet    ?? 0,
-            goalsConceded:s.goalsConceded ?? 0,
-            tackles:      s.tackles       ?? 0,
-            interceptions:s.interceptions ?? 0,
-            totalShots:   s.totalShots    ?? 0,
-            shotsOnTarget:s.shotsOnTarget ?? 0,
-            keyPasses:    s.keyPasses     ?? 0,
-            successfulDribbles: s.successfulDribbles ?? 0,
-          };
-        } catch {
-          return { id: p.id, name: p.name, position: p.position,
-                   positionDetail: p.positionsDetailed?.[0] ?? null,
-                   shirtNumber: p.shirtNumber ?? null, rating: null,
-                   appearances: 0, minutesPlayed: 0, goals: 0, assists: 0, apps: 0,
-                   yellowCards: 0, redCards: 0, saves: 0, cleanSheet: 0, goalsConceded: 0,
-                   tackles: 0, interceptions: 0, totalShots: 0, shotsOnTarget: 0,
-                   keyPasses: 0, successfulDribbles: 0 };
-        }
-      })
-    );
+    const ids     = athletes.map(a => a.id).join(',');
+    const details = ids
+      ? await get365('athletes', `athletes=${ids}&fullDetails=true`).catch(() => ({ athletes: [] }))
+      : { athletes: [] };
+    const detailById = new Map((details.athletes || []).map(a => [a.id, a]));
+
+    const players = athletes.map(a => {
+      const league = detailById.get(a.id)?.highlightStats
+        ?.find(h => h.competitionId === LEAGUE_ID);
+      const stats = {};
+      for (const s of (league?.stats || [])) {
+        const key = STAT_TYPES[s.type];
+        if (key) stats[key] = statNumber(s.value);
+      }
+      return {
+        id:            a.id,
+        name:          a.name,
+        shortName:     a.shortName || a.name,
+        photo:         athleteImage(a.id),
+        position:      POSITION_LETTER[a.position.id],
+        positionName:  a.formationPosition?.name || a.position?.name || null,
+        shirtNumber:   a.jerseyNum ?? null,
+        rating:        stats.rating ?? null,
+        appearances:   stats.appearances   ?? 0,
+        minutesPlayed: stats.minutesPlayed ?? null,
+        goals:         stats.goals         ?? 0,
+        assists:       stats.assists       ?? 0,
+        yellowCards:   stats.yellowCards   ?? null,
+        redCards:      stats.redCards      ?? null,
+        totalShots:    stats.totalShots    ?? null,
+        shotsOnTarget: stats.shotsOnTarget ?? null,
+        saves:         stats.saves         ?? null,
+        cleanSheet:    stats.cleanSheet    ?? null,
+        goalsConceded: stats.goalsConceded ?? null,
+      };
+    });
     res.json(players);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -259,22 +202,21 @@ app.get('/api/squad', async (req, res) => {
 // ─── League standings ─────────────────────────────────────────────
 app.get('/api/standings', async (req, res) => {
   try {
-    const { tid, sid } = await resolveSofascoreIds();
-    const r = await fetch(`${SOFASCORE}/unique-tournament/${tid}/season/${sid}/standings/total`, { headers: SC_HEADERS });
-    const d = await r.json();
-    // Group 0 = Championship Round (6), Group 1 = Relegation Round (8), Group 2 = Full league (14)
-    const allGroups  = d.standings || [];
-    const fullGroup  = allGroups.find(g => g.rows?.length >= 14) || allGroups[0];
-    const rows = (fullGroup?.rows || []).map(row => ({
+    const d = await get365('standings', `competitions=${LEAGUE_ID}`);
+    // After the split there may be several groups — show the largest table
+    const table = (d.standings || []).reduce((best, s) =>
+      (s.rows?.length || 0) > (best?.rows?.length || 0) ? s : best, null);
+    const rows = (table?.rows || []).map(row => ({
       position: row.position,
-      teamName: row.team.name,
-      teamId:   row.team.id,
-      played:   row.matches,
-      wins:     row.wins,
-      draws:    row.draws,
-      losses:   row.losses,
-      gf:       row.scoresFor,
-      ga:       row.scoresAgainst,
+      teamName: row.competitor.name,
+      teamId:   row.competitor.id,
+      teamLogo: competitorImage(row.competitor.id),
+      played:   row.gamePlayed,
+      wins:     row.gamesWon,
+      draws:    row.gamesEven,
+      losses:   row.gamesLost,
+      gf:       row.for,
+      ga:       row.against,
       points:   row.points,
     }));
     res.json(rows);
@@ -283,135 +225,124 @@ app.get('/api/standings', async (req, res) => {
   }
 });
 
-// ─── Match details: goals + lineups ──────────────────────────────
-app.get('/api/match/:id/lineups-only', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const linR = await fetch(`${SOFASCORE}/event/${id}/lineups`, { headers: SC_HEADERS }).then(r => r.json());
-    if (linR.error) return res.status(404).json({ available: false });
+// ─── Match details: events + lineups ─────────────────────────────
+const EVENT_GOAL = 1, EVENT_YELLOW = 2, EVENT_RED = 3, EVENT_SUB = 1000;
+const GOAL_OWN = 2, GOAL_PENALTY = 3, RED_SECOND_YELLOW = 21;
 
-    const processTeam = team => team ? {
-      formation: team.formation || '',
-      confirmed: team.confirmed ?? false,
-      starters: (team.players || [])
-        .filter(p => !p.substitute)
-        .map(p => ({
-          id:       p.player.id,
-          name:     p.player.name,
-          nameHe:   null,
-          rating:   null,
-          position: p.position,
-          number:   p.shirtNumber,
-          subOff:   null,
-        })),
-    } : null;
+const STARTING = 1;
 
-    res.json({
-      available: true,
-      home: processTeam(linR.home),
-      away: processTeam(linR.away),
-    });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
+function lineupTeam(competitor, membersById, subsOff) {
+  const lineup = competitor?.lineups;
+  const starters = (lineup?.members || []).filter(m => m.status === STARTING);
+  if (!starters.length) return null;
+
+  // Order back-to-front (line), then right-to-left (fieldSide 100 = right) for RTL rows
+  starters.sort((a, b) =>
+    (a.yardFormation?.line ?? 0) - (b.yardFormation?.line ?? 0) ||
+    (b.yardFormation?.fieldSide ?? 0) - (a.yardFormation?.fieldSide ?? 0));
+
+  return {
+    formation: lineup.formation || '',
+    confirmed: lineup.status === 'מאושר',
+    starters: starters.map(m => {
+      const mem = membersById[m.id] || {};
+      return {
+        id:       mem.athleteId ?? m.id,
+        name:     mem.name || '?',
+        nameHe:   mem.name || null,
+        photo:    mem.athleteId ? athleteImage(mem.athleteId) : null,
+        rating:   m.ranking > 0 ? m.ranking : null,
+        position: POSITION_LETTER[m.position?.id] || null,
+        number:   mem.jerseyNumber ?? null,
+        subOff:   subsOff[m.id] || null,
+      };
+    }),
+  };
+}
 
 app.get('/api/match/:id/details', async (req, res) => {
   try {
-    const { id } = req.params;
+    const g = await getGame(req.params.id, TTL.short);
+    if (!g) return res.status(404).json({ error: 'not found' });
 
-    // Fetch Sofascore data + event metadata in parallel
-    const [incR, linR, evR] = await Promise.all([
-      fetch(`${SOFASCORE}/event/${id}/incidents`, { headers: SC_HEADERS }).then(r => r.json()),
-      fetch(`${SOFASCORE}/event/${id}/lineups`,   { headers: SC_HEADERS }).then(r => r.json()),
-      fetch(`${SOFASCORE}/event/${id}`,           { headers: SC_HEADERS }).then(r => r.json()),
-    ]);
-
-    // Build Hebrew names + ratings from 365scores (fails gracefully)
-    const ev      = evR.event;
-    const data365 = ev
-      ? await get365Data(ev.startTimestamp, ev.homeTeam.name, ev.awayTeam.name)
-      : null;
-
-    // Hebrew name lookup for all players (starters + substitutes) by player id
-    const playerHeMap = {};
-    for (const [side, team] of [['home', linR.home], ['away', linR.away]]) {
-      for (const p of (team?.players || [])) {
-        const nameHe = data365?.nameMap?.[`${side}-${p.shirtNumber}`] || null;
-        if (nameHe) playerHeMap[p.player.id] = nameHe;
-      }
-    }
+    const membersById = Object.fromEntries((g.members || []).map(m => [m.id, m]));
+    const nameOf      = id => membersById[id]?.name || '?';
+    const homeId      = g.homeCompetitor.id;
 
     const subsOff = {};
     const events  = [];
 
-    for (const i of (incR.incidents || [])) {
-      if (i.incidentType === 'goal') {
-        const ev = {
-          type:      'goal',
-          isHome:    i.isHome,
-          time:      i.time,
-          addedTime: i.addedTime || 0,
-          player:    i.player?.name || '?',
-          playerHe:  i.player?.id ? (playerHeMap[i.player.id] || null) : null,
-          ownGoal:   i.incidentClass === 'ownGoal',
-          penalty:   i.incidentClass === 'penalty',
-        };
-        events.push(ev);
-      } else if (i.incidentType === 'substitution') {
-        const subData = {
-          time:        i.time,
-          addedTime:   i.addedTime || 0,
-          subInName:   i.playerIn?.name || null,
-          subInNameHe: i.playerIn?.id ? (playerHeMap[i.playerIn.id] || null) : null,
-          subInId:     i.playerIn?.id  || null,
-        };
-        if (i.playerOut?.id) subsOff[i.playerOut.id] = subData;
+    for (const e of (g.events || [])) {
+      const base = {
+        isHome:    e.competitorId === homeId,
+        time:      e.gameTime,
+        addedTime: e.addedTime || 0,
+      };
+      const typeId = e.eventType?.id;
+      const subId  = e.eventType?.subTypeId;
+
+      if (typeId === EVENT_GOAL) {
         events.push({
-          type:        'substitution',
-          isHome:      i.isHome,
-          time:        i.time,
-          addedTime:   i.addedTime || 0,
-          playerOut:   i.playerOut?.name || '?',
-          playerOutHe: i.playerOut?.id ? (playerHeMap[i.playerOut.id] || null) : null,
-          playerIn:    i.playerIn?.name  || '?',
-          playerInHe:  i.playerIn?.id  ? (playerHeMap[i.playerIn.id]  || null) : null,
+          ...base,
+          type:     'goal',
+          player:   nameOf(e.playerId),
+          playerHe: nameOf(e.playerId),
+          ownGoal:  subId === GOAL_OWN,
+          penalty:  subId === GOAL_PENALTY,
         });
-      } else if (i.incidentType === 'card') {
+      } else if (typeId === EVENT_SUB) {
+        // playerId = coming on, extraPlayers[0] = going off
+        const inId  = e.playerId;
+        const outId = e.extraPlayers?.[0];
+        if (outId) {
+          subsOff[outId] = {
+            time:        e.gameTime,
+            addedTime:   e.addedTime || 0,
+            subInName:   nameOf(inId),
+            subInNameHe: nameOf(inId),
+            subInId:     membersById[inId]?.athleteId ?? null,
+          };
+        }
         events.push({
+          ...base,
+          type:        'substitution',
+          playerOut:   nameOf(outId),
+          playerOutHe: nameOf(outId),
+          playerIn:    nameOf(inId),
+          playerInHe:  nameOf(inId),
+        });
+      } else if (typeId === EVENT_YELLOW || typeId === EVENT_RED) {
+        events.push({
+          ...base,
           type:      'card',
-          isHome:    i.isHome,
-          time:      i.time,
-          addedTime: i.addedTime || 0,
-          player:    i.player?.name || '?',
-          playerHe:  i.player?.id ? (playerHeMap[i.player.id] || null) : null,
-          cardClass: i.incidentClass, // 'yellow' | 'red' | 'yellowRed'
+          player:    nameOf(e.playerId),
+          playerHe:  nameOf(e.playerId),
+          cardClass: typeId === EVENT_YELLOW ? 'yellow'
+                   : subId === RED_SECOND_YELLOW ? 'yellowRed' : 'red',
         });
       }
     }
 
     events.sort((a, b) => (a.time - b.time) || (a.addedTime - b.addedTime));
 
-    const processTeam = (team, side) => team ? {
-      formation: team.formation || '',
-      starters: (team.players || [])
-        .filter(p => !p.substitute)
-        .map(p => ({
-          id:       p.player.id,
-          name:     p.player.name,
-          nameHe:   data365?.nameMap?.[`${side}-${p.shirtNumber}`]   || null,
-          rating:   data365?.ratingMap?.[`${side}-${p.shirtNumber}`] || null,
-          position: p.position,
-          number:   p.shirtNumber,
-          subOff:   subsOff[p.player.id] || null,
-        })),
-    } : null;
-
     res.json({
       events,
-      home: processTeam(linR.home, 'home'),
-      away: processTeam(linR.away, 'away'),
+      home: lineupTeam(g.homeCompetitor, membersById, subsOff),
+      away: lineupTeam(g.awayCompetitor, membersById, subsOff),
     });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/match/:id/lineups-only', async (req, res) => {
+  try {
+    const g = await getGame(req.params.id, TTL.short);
+    const membersById = Object.fromEntries((g?.members || []).map(m => [m.id, m]));
+    const home = lineupTeam(g?.homeCompetitor, membersById, {});
+    const away = lineupTeam(g?.awayCompetitor, membersById, {});
+    if (!home || !away) return res.json({ available: false });
+    res.json({ available: true, home, away });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
