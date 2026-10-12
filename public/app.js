@@ -152,10 +152,32 @@ function carouselNav(dir) {
     : Math.max(slideIdx - 1, 0);
 
   const cardW = cards[0].getBoundingClientRect().width + 20;
-  track.style.transform = `translateX(-${slideIdx * cardW}px)`;
+  // In RTL the following cards sit to the left, so the track moves right (+x) to reveal them
+  const sign = getComputedStyle(track).direction === 'rtl' ? 1 : -1;
+  track.style.transform = `translateX(${sign * slideIdx * cardW}px)`;
 
   document.getElementById('car-prev').disabled = slideIdx === 0;
   document.getElementById('car-next').disabled = slideIdx >= maxIdx;
+}
+
+// Swipe support for touch screens
+function bindCarouselSwipe(viewport) {
+  let startX = null, startY = null;
+  viewport.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  viewport.addEventListener('touchend', e => {
+    if (startX === null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    startX = startY = null;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return; // tap or vertical scroll
+    // Dragging content toward the reading direction's end reveals the next card:
+    // in RTL that's a swipe to the right
+    const rtl = getComputedStyle(viewport).direction === 'rtl';
+    carouselNav((dx > 0) === rtl ? 'next' : 'prev');
+  });
 }
 
 function renderCarousel(events) {
@@ -168,6 +190,8 @@ function renderCarousel(events) {
     if (track && next) {
       next.disabled = track.querySelectorAll('.game-card').length <= getVisible();
     }
+    const viewport = document.querySelector('.carousel-viewport');
+    if (viewport) bindCarouselSwipe(viewport);
   }, 0);
 
   return `
@@ -182,7 +206,12 @@ function renderCarousel(events) {
     </div>`;
 }
 
+// Mobile browsers fire resize when the address bar shows/hides while scrolling —
+// only reset the carousel when the width actually changes
+let lastCarouselWidth = window.innerWidth;
 window.addEventListener('resize', () => {
+  if (window.innerWidth === lastCarouselWidth) return;
+  lastCarouselWidth = window.innerWidth;
   const track = document.getElementById('carousel-track');
   if (!track) return;
   slideIdx = 0;
