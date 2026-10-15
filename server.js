@@ -3,7 +3,7 @@ const path    = require('path');
 const { get365, TTL, MACCABI_ID, LEAGUE_ID, athleteImage, competitorImage } = require('./lib/s365');
 
 const app  = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
