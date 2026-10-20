@@ -75,7 +75,7 @@ function renderFeatured(ev) {
 }
 
 async function toggleUpcomingLineup(btn) {
-  const { id: eventId, home: homeTeam, away: awayTeam } = btn.dataset;
+  const { id: eventId } = btn.dataset;
   const el = document.getElementById(`upcoming-lineup-${eventId}`);
   if (!el) return;
 
@@ -88,22 +88,41 @@ async function toggleUpcomingLineup(btn) {
   btn.textContent = 'הרכבים ▲';
   el.classList.add('open');
 
-  if (el.dataset.loaded) return;
-  el.innerHTML = '<div class="loading-msg-dark" style="text-align:center;padding:20px">⏳ טוען הרכבים…</div>';
+  // Only the official lineup is final — a predicted one is refetched on every open
+  if (el.dataset.confirmed) return;
+  if (!el.dataset.loaded)
+    el.innerHTML = '<div class="loading-msg-dark" style="text-align:center;padding:20px">⏳ טוען הרכבים…</div>';
+  await loadUpcomingLineup(btn, el);
+}
 
+const LINEUP_REFRESH_MS = 2 * 60 * 1000;
+
+async function loadUpcomingLineup(btn, el) {
+  const { id: eventId, home: homeTeam, away: awayTeam } = btn.dataset;
   try {
     const data = await getJson(`/api/match/${eventId}/lineups-only`);
     if (!data.available) {
-      el.innerHTML = '<div class="lineup-unavailable">ההרכב טרם פורסם</div>';
+      el.innerHTML = '<div class="lineup-unavailable">ההרכב טרם פורסם. בדרך כלל מתפרסם כשעה לפני המשחק.</div>';
     } else {
-      const label = data.home?.confirmed ? 'הרכב רשמי' : 'הרכב צפוי';
+      const label = data.confirmed
+        ? 'הרכב רשמי'
+        : 'הרכב משוער (תחזית) · יתעדכן כשיפורסם ההרכב הרשמי';
       el.innerHTML = `<div class="lineup-status-label">${label}</div>` +
         renderPitch(data.home, data.away, homeTeam, awayTeam, []);
+      if (data.confirmed) el.dataset.confirmed = '1';
     }
     el.dataset.loaded = '1';
   } catch {
-    el.innerHTML = '<div class="error-msg" style="margin:12px">⚠️ שגיאה בטעינת הרכבים</div>';
+    if (!el.dataset.loaded)
+      el.innerHTML = '<div class="error-msg" style="margin:12px">⚠️ שגיאה בטעינת הרכבים</div>';
   }
+
+  // While open and not yet official, keep checking for the official lineup
+  clearTimeout(el._refresh);
+  if (!el.dataset.confirmed)
+    el._refresh = setTimeout(() => {
+      if (el.classList.contains('open')) loadUpcomingLineup(btn, el);
+    }, LINEUP_REFRESH_MS);
 }
 
 // ─── REGULAR GAME CARD ────────────────────────────────────────────

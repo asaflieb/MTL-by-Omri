@@ -343,7 +343,8 @@ app.get('/api/match/:id/lineups-only', async (req, res) => {
     const home = lineupTeam(g?.homeCompetitor, membersById, {});
     const away = lineupTeam(g?.awayCompetitor, membersById, {});
     if (!home || !away) return res.json({ available: false });
-    res.json({ available: true, home, away });
+    // 'משוער' = 365scores' own prediction, 'מאושר' = official team sheet
+    res.json({ available: true, confirmed: home.confirmed && away.confirmed, home, away });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
